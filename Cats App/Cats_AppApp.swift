@@ -12,7 +12,7 @@ import SwiftData
 struct Cats_AppApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-          
+            CatBreed.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

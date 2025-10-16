@@ -9,8 +9,12 @@ import SwiftUI
 
 struct FavouriteCatsView: View {
     static let defaultTitle = "Favourites"
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ScrollView {
+            CatBreedsGridView(breeds: MockData.breeds)
+                .padding(.horizontal)
+        }
     }
 }
 

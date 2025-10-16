@@ -13,11 +13,23 @@ struct CatsListView: View {
     @State private var searchText = ""
     
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-            .searchable(text: $searchText)
+        ScrollView {
+            CatBreedsGridView(breeds: MockData.breeds)
+                .padding(.horizontal)
+        }
+        .searchable(text: $searchText)
     }
 }
 
 #Preview {
     CatsListView()
+}
+
+struct MockData {
+    static let breeds: [CatBreed] = [
+        .init(id: "persian", name: "Persian"),
+        .init(id: "siamese", name: "Siamese"),
+        .init(id: "sphynx", name: "Sphynx"),
+        .init(id: "birman", name: "Birman"),
+    ]
 }

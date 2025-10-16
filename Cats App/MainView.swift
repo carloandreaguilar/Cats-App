@@ -29,4 +29,5 @@ struct MainView: View {
 
 #Preview {
     MainView()
+        .modelContainer(for: CatBreed.self, inMemory: true)
 }
