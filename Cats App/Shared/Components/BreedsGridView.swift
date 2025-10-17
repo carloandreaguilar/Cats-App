@@ -40,8 +40,6 @@ struct BreedsGridView: View {
         VStack(spacing: 4) {
             ZStack(alignment: .topTrailing) {
                 image(url: breed.imageURL)
-                    .aspectRatio(1.0, contentMode: .fit)
-                    .cornerRadius(imageCornerRadius)
                 Button {
                     
                 } label: {
@@ -69,8 +67,12 @@ struct BreedsGridView: View {
                     case .empty:
                         emptyImageBackground
                     case .success(let image):
-                        image
-                            .resizable()
+                        GeometryReader { geometryReader in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: geometryReader.size.width, height: geometryReader.size.width, alignment: .center)
+                        }
                     default:
                         emptyImageBackground
                             .overlay {
@@ -89,6 +91,9 @@ struct BreedsGridView: View {
                 
             }
         }
+        .clipped()
+        .aspectRatio(1, contentMode: .fit)
+        .cornerRadius(imageCornerRadius)
     }
     
     var emptyImageBackground: some View {
