@@ -13,18 +13,25 @@ struct BreedsGridView: View {
     private let favouriteButtonHeight: CGFloat = 20
     private let gridColumns = [
         GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
     
-    init(_ breeds: [CatBreed]) {
+    private let onLastItemAppear: (() async -> Void)?
+    
+    init(_ breeds: [CatBreed], onlastItemAppear: (() async -> Void)? = nil) {
         self.breeds = breeds
+        self.onLastItemAppear = onlastItemAppear
     }
     
     var body: some View {
         LazyVGrid(columns: gridColumns, spacing: 12) {
             ForEach(breeds, id: \.id) { breed in
                 gridItem(for: breed)
+                    .task {
+                        if breed.id == breeds.last?.id {
+                            await onLastItemAppear?()
+                        }
+                    }
             }
         }
     }
@@ -32,8 +39,7 @@ struct BreedsGridView: View {
     func gridItem(for breed: CatBreed) -> some View {
         VStack(spacing: 4) {
             ZStack(alignment: .topTrailing) {
-                Rectangle()
-                    .fill(Color.secondary)
+                image(url: breed.imageURL)
                     .aspectRatio(1.0, contentMode: .fit)
                     .cornerRadius(imageCornerRadius)
                 Button {
@@ -53,6 +59,41 @@ struct BreedsGridView: View {
                 .font(.headline)
         }
         .frame(maxWidth: .infinity)
+    }
+    
+    func image(url: URL?) -> some View {
+        Group {
+            if let url = url {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        emptyImageBackground
+                    case .success(let image):
+                        image
+                            .resizable()
+                    default:
+                        emptyImageBackground
+                            .overlay {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(.secondary)
+                            }
+                    }
+                }
+                .animation(.default, value: true)
+            } else {
+                emptyImageBackground
+                    .overlay {
+                        Text("No image")
+                            .foregroundStyle(.secondary)
+                    }
+                
+            }
+        }
+    }
+    
+    var emptyImageBackground: some View {
+        Rectangle()
+            .fill(Color.gray.opacity(0.5))
     }
 }
 

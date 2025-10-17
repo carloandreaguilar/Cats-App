@@ -16,6 +16,7 @@ final class CatBreed: Decodable {
     var descriptionText: String?
     var temperament: String?
     var lifeSpan: ClosedRange<Int>?
+    var imageURL: URL?
     
     init(
         id: String,
@@ -23,7 +24,8 @@ final class CatBreed: Decodable {
         origin: String? = nil,
         descriptionText: String? = nil,
         temperament: String? = nil,
-        lifeSpan: ClosedRange<Int>? = nil
+        lifeSpan: ClosedRange<Int>? = nil,
+        imageURL: URL? = nil
     ) {
         self.id = id
         self.name = name
@@ -31,6 +33,7 @@ final class CatBreed: Decodable {
         self.descriptionText = descriptionText
         self.temperament = temperament
         self.lifeSpan = lifeSpan
+        self.imageURL = imageURL
     }
     
     enum CodingKeys: String, CodingKey {
@@ -40,6 +43,11 @@ final class CatBreed: Decodable {
         case descriptionText = "description"
         case temperament
         case lifeSpan = "life_span"
+        case image
+    }
+    
+    private enum ImageCodingKeys: String, CodingKey {
+        case url
     }
     
     private static func parseLifeSpanRange(_ text: String) -> ClosedRange<Int>? {
@@ -65,6 +73,22 @@ final class CatBreed: Decodable {
             }
             return Self.parseLifeSpanRange(lifeSpanString)
         }()
-        self.init(id: id, name: name, origin: origin, descriptionText: descriptionText, temperament: temperament, lifeSpan: lifeSpanRange)
+        let imageUrl: URL? = try {
+            if container.contains(.image) {
+                let imageContainer = try container.nestedContainer(keyedBy: ImageCodingKeys.self, forKey: .image)
+                return try imageContainer.decodeIfPresent(URL.self, forKey: .url)
+            }
+            return nil
+        }()
+        self.init(
+            id: id,
+            name: name,
+            origin: origin,
+            descriptionText: descriptionText,
+            temperament: temperament,
+            lifeSpan: lifeSpanRange,
+            imageURL: imageUrl
+        )
     }
 }
+
