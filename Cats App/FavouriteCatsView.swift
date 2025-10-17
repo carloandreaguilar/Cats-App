@@ -12,9 +12,18 @@ struct FavouriteCatsView: View {
     
     var body: some View {
         ScrollView {
-            CatBreedsGridView(breeds: MockData.breeds)
-                .padding(.horizontal)
+            VStack(alignment: .leading, spacing: 16) {
+                averageLifeSpanView
+                CatBreedsGridView(MockData.breeds)
+            }
+            .padding(.horizontal)
         }
+    }
+    
+    var averageLifeSpanView: some View {
+        Text("Average lifespan: ")
+            .font(.headline)
+            .foregroundColor(.secondary)
     }
 }
 

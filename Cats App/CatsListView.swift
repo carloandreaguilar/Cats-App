@@ -14,7 +14,7 @@ struct CatsListView: View {
     
     var body: some View {
         ScrollView {
-            CatBreedsGridView(breeds: MockData.breeds)
+            CatBreedsGridView(MockData.breeds)
                 .padding(.horizontal)
         }
         .searchable(text: $searchText)
@@ -27,8 +27,8 @@ struct CatsListView: View {
 
 struct MockData {
     static let breeds: [CatBreed] = [
-        .init(id: "persian", name: "Persian"),
-        .init(id: "siamese", name: "Siamese"),
+        .init(id: "persian", name: "Persian", lifeSpan: 12 ... 15),
+        .init(id: "siamese", name: "Siamese", lifeSpan: 10 ... 12),
         .init(id: "sphynx", name: "Sphynx"),
         .init(id: "birman", name: "Birman"),
     ]

@@ -10,13 +10,14 @@ import SwiftUI
 struct CatBreedsGridView: View {
     private let breeds: [CatBreed]
     private let imageCornerRadius: CGFloat = 12
+    private let favouriteButtonHeight: CGFloat = 20
     private let gridColumns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
     
-    init(breeds: [CatBreed]) {
+    init(_ breeds: [CatBreed]) {
         self.breeds = breeds
     }
     
@@ -30,10 +31,22 @@ struct CatBreedsGridView: View {
     
     func gridItem(for breed: CatBreed) -> some View {
         VStack(spacing: 4) {
-            Rectangle()
-                .fill(Color.secondary)
-                .aspectRatio(1.0, contentMode: .fit)
-                .cornerRadius(imageCornerRadius)
+            ZStack(alignment: .topTrailing) {
+                Rectangle()
+                    .fill(Color.secondary)
+                    .aspectRatio(1.0, contentMode: .fit)
+                    .cornerRadius(imageCornerRadius)
+                Button {
+                    
+                } label: {
+                    Image(systemName: "heart")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: favouriteButtonHeight)
+                        .padding((max(0, .minimumHitSize - favouriteButtonHeight)) / 2)
+                        .foregroundStyle(Color.primary)
+                }
+            }
             Text(breed.name)
                 .lineLimit(1)
                 .fixedSize(horizontal: false, vertical: true)
@@ -42,3 +55,4 @@ struct CatBreedsGridView: View {
         .frame(maxWidth: .infinity)
     }
 }
+

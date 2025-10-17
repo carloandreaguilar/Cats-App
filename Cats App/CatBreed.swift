@@ -6,17 +6,16 @@
 //
 
 import SwiftData
+import Foundation
 
 @Model
-final class CatBreed {
+final class CatBreed: Decodable {
     @Attribute(.unique) var id: String
     var name: String
     var origin: String?
     var descriptionText: String?
     var temperament: String?
-    var lifeSpan: String?
-    var wikipediaURL: String?
-    var weightMetric: String?
+    var lifeSpan: ClosedRange<Int>?
     
     init(
         id: String,
@@ -24,10 +23,7 @@ final class CatBreed {
         origin: String? = nil,
         descriptionText: String? = nil,
         temperament: String? = nil,
-        lifeSpan: String? = nil,
-        wikipediaURL: String? = nil,
-        weightMetric: String? = nil,
-        weightImperial: String? = nil
+        lifeSpan: ClosedRange<Int>? = nil
     ) {
         self.id = id
         self.name = name
@@ -35,7 +31,40 @@ final class CatBreed {
         self.descriptionText = descriptionText
         self.temperament = temperament
         self.lifeSpan = lifeSpan
-        self.wikipediaURL = wikipediaURL
-        self.weightMetric = weightMetric
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case origin
+        case descriptionText = "description"
+        case temperament
+        case lifeSpan = "life_span"
+    }
+    
+    private static func parseLifeSpanRange(_ text: String) -> ClosedRange<Int>? {
+        let values = text
+            .split(separator: "-")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .compactMap { Int($0) }
+            .sorted()
+        guard !values.isEmpty else { return nil }
+        return values.first!...values.last!
+    }
+    
+    convenience init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decode(String.self, forKey: .id)
+        let name = try container.decode(String.self, forKey: .name)
+        let origin = try container.decodeIfPresent(String.self, forKey: .origin)
+        let descriptionText = try container.decodeIfPresent(String.self, forKey: .descriptionText)
+        let temperament = try container.decodeIfPresent(String.self, forKey: .temperament)
+        let lifeSpanRange: ClosedRange<Int>? = try {
+            guard let lifeSpanString = try container.decodeIfPresent(String.self, forKey: .lifeSpan) else {
+                return nil
+            }
+            return Self.parseLifeSpanRange(lifeSpanString)
+        }()
+        self.init(id: id, name: name, origin: origin, descriptionText: descriptionText, temperament: temperament, lifeSpan: lifeSpanRange)
     }
 }
