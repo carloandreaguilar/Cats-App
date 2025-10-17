@@ -33,7 +33,6 @@ class DefaultBreedsDataSource: BreedsDataSource {
         return try await loadPageFromNetwork(page: currentPage)
     }
     
-    @MainActor
     func loadNextPage() async throws -> Page<CatBreed>? {
         return try await loadPageFromNetwork(page: currentPage + 1)
     }
@@ -43,7 +42,7 @@ class DefaultBreedsDataSource: BreedsDataSource {
         let newTask = Task<Page<CatBreed>?, Error> { [weak self] in
             guard let self else { throw NSError() }
            
-            let newBreeds = try await networkClient.fetchBreeds(page: page, pageSize: pageSize)
+            let newBreeds = try await networkClient.fetchBreeds(page: page, pageSize: pageSize).map { CatBreed($0) }
             
             guard !Task.isCancelled else {
                 throw CancellationError()

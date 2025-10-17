@@ -20,7 +20,7 @@ extension FavouriteBreedsView {
         private(set) var breeds: [CatBreed] = []
         
         func loadBreeds() {
-            self.breeds = MockData.breeds
+            
         }
     }
 }

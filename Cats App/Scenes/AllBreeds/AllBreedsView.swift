@@ -75,12 +75,3 @@ struct AllBreedsView: View {
 #Preview {
     AllBreedsView(viewModel: AllBreedsView.DefaultViewModel())
 }
-
-struct MockData {
-    static let breeds: [CatBreed] = [
-        .init(id: "persian", name: "Persian", lifeSpan: 12 ... 15),
-        .init(id: "siamese", name: "Siamese", lifeSpan: 10 ... 12),
-        .init(id: "sphynx", name: "Sphynx"),
-        .init(id: "birman", name: "Birman"),
-    ]
-}

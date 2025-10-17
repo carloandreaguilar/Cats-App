@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BreedsNetworkClient {
-    func fetchBreeds(page: Int, pageSize: Int) async throws -> [CatBreed]
+    func fetchBreeds(page: Int, pageSize: Int) async throws -> [CatBreedDTO]
 }
 
 class DefaultBreedsNetworkClient: BreedsNetworkClient {
@@ -27,9 +27,9 @@ class DefaultBreedsNetworkClient: BreedsNetworkClient {
         self.networkClient = .init(baseURL: Self.defaultBaseURL, decoder: decoder)
         self.apiKey = Self.defaultApiKey
     }
+
     
-    @MainActor
-    func fetchBreeds(page: Int = 1, pageSize: Int) async throws -> [CatBreed] {
+    func fetchBreeds(page: Int = 1, pageSize: Int) async throws -> [CatBreedDTO] {
         let path = "/breeds"
         let queryItems: [URLQueryItem] = [
             URLQueryItem(name: "limit", value: String(pageSize)),
