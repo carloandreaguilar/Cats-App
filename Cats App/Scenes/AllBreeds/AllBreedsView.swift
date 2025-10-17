@@ -10,19 +10,28 @@ import SwiftUI
 struct AllBreedsView: View {
     static let defaultTitle = "All Breeds"
     
+    @State private var viewModel: ViewModel
+    
     @State private var searchText = ""
+    
+    init(viewModel: ViewModel = DefaultViewModel()) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         ScrollView {
-            BreedsGridView(MockData.breeds)
+            BreedsGridView(viewModel.breeds)
                 .padding(.horizontal)
         }
         .searchable(text: $searchText)
+        .task {
+            await viewModel.loadBreeds()
+        }
     }
 }
 
 #Preview {
-    AllBreedsView()
+    AllBreedsView(viewModel: AllBreedsView.DefaultViewModel())
 }
 
 struct MockData {

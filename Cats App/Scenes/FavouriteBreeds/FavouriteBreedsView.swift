@@ -10,13 +10,22 @@ import SwiftUI
 struct FavouriteBreedsView: View {
     static let defaultTitle = "Favourites"
     
+    @State private var viewModel: ViewModel
+    
+    init(viewModel: ViewModel = DefaultViewModel()) {
+        self.viewModel = viewModel
+    }
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 averageLifeSpanView
-                BreedsGridView(MockData.breeds)
+                BreedsGridView(viewModel.breeds)
             }
             .padding(.horizontal)
+        }
+        .onAppear {
+            viewModel.loadBreeds()
         }
     }
     
