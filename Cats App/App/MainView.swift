@@ -11,16 +11,16 @@ import SwiftData
 struct MainView: View {
     var body: some View {
         TabView {
-            Tab(CatsListView.defaultTitle, systemImage: "cat") {
+            Tab(AllBreedsView.defaultTitle, systemImage: "cat") {
                 NavigationStack {
-                    CatsListView()
-                        .navigationTitle(CatsListView.defaultTitle)
+                    AllBreedsView()
+                        .navigationTitle(AllBreedsView.defaultTitle)
                 }
             }
-            Tab(FavouriteCatsView.defaultTitle, systemImage: "heart") {
+            Tab(FavouriteBreedsView.defaultTitle, systemImage: "heart") {
                 NavigationStack {
-                    FavouriteCatsView()
-                        .navigationTitle(FavouriteCatsView.defaultTitle)
+                    FavouriteBreedsView()
+                        .navigationTitle(FavouriteBreedsView.defaultTitle)
                 }
             }
         }

@@ -1,5 +1,5 @@
 //
-//  CatBreedsGridView.swift
+//  BreedsGridView.swift
 //  Cats App
 //
 //  Created by Carlo André Aguilar on 17/10/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CatBreedsGridView: View {
+struct BreedsGridView: View {
     private let breeds: [CatBreed]
     private let imageCornerRadius: CGFloat = 12
     private let favouriteButtonHeight: CGFloat = 20

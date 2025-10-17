@@ -1,5 +1,5 @@
 //
-//  CatsListView.swift
+//  AllBreedsView.swift
 //  Cats App
 //
 //  Created by Carlo André Aguilar on 16/10/25.
@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-struct CatsListView: View {
+struct AllBreedsView: View {
     static let defaultTitle = "All Breeds"
     
     @State private var searchText = ""
     
     var body: some View {
         ScrollView {
-            CatBreedsGridView(MockData.breeds)
+            BreedsGridView(MockData.breeds)
                 .padding(.horizontal)
         }
         .searchable(text: $searchText)
@@ -22,7 +22,7 @@ struct CatsListView: View {
 }
 
 #Preview {
-    CatsListView()
+    AllBreedsView()
 }
 
 struct MockData {
