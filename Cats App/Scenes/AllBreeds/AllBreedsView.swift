@@ -11,8 +11,6 @@ import SwiftData
 struct AllBreedsView: View {
     static let defaultTitle = "All Breeds"
     
-    @Environment(\.modelContext) var modelContext
-    
     @State private var viewModel: ViewModel
     
     @State private var searchText = ""
@@ -34,7 +32,7 @@ struct AllBreedsView: View {
                 ScrollView {
                     VStack {
                         BreedsGridView(viewModel.breeds, onFavouriteTapped: { breed in
-                            try? ToggleFavouriteUseCase.toggle(for: breed, on: modelContext)
+                            try? viewModel.toggleFavourite(for: breed)
                         }, onlastItemAppear: {
                             await viewModel.loadNextPageIfNeeded()
                         })
@@ -104,7 +102,7 @@ struct AllBreedsView: View {
             breedsDataSource: DefaultBreedsDataSource(
                 networkService: DefaultBreedsNetworkService(),
                 persistenceService: DefaultBreedsPersistenceService(modelContext: context)
-            )
+            ), toggleFavouriteUseCase: .init(modelContext: context)
         )
     )
     .modelContainer(container)

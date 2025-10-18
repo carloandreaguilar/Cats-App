@@ -8,11 +8,9 @@
 import Foundation
 import SwiftData
 
-@MainActor
 protocol BreedsPersistenceService {
     func fetchPersistedBreeds(page: Int, pageSize: Int) throws -> [CatBreed]
     func persist(_ breedDtos: [CatBreedDTO]) throws -> [CatBreed]
-   
 }
 
 class DefaultBreedsPersistenceService: BreedsPersistenceService {

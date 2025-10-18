@@ -18,17 +18,20 @@ extension AllBreedsView {
         var breeds: [CatBreed] { get }
         func loadFirstPage() async
         func loadNextPageIfNeeded() async
+        func toggleFavourite(for breed: CatBreed) throws
     }
     
     @Observable
     class DefaultViewModel: ViewModel {
         private let breedsDataSource: BreedsDataSource
+        private let toggleFavouriteUseCase: ToggleFavouriteUseCase
         private(set) var viewState: ViewState = .loadingFirstPage
         private(set) var breeds: [CatBreed] = []
         private var latestDataSourceType: DataSourceType?
         
-        init(breedsDataSource: BreedsDataSource) {
+        init(breedsDataSource: BreedsDataSource, toggleFavouriteUseCase: ToggleFavouriteUseCase) {
             self.breedsDataSource = breedsDataSource
+            self.toggleFavouriteUseCase = toggleFavouriteUseCase
         }
         
         func loadFirstPage() async {
@@ -50,6 +53,10 @@ extension AllBreedsView {
             } catch {
                 viewState = .error
             }
+        }
+        
+        func toggleFavourite(for breed: CatBreed) throws {
+            try toggleFavouriteUseCase.toggle(for: breed)
         }
         
         private func updateData(from page: Page<CatBreed>?) {

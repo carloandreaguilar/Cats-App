@@ -30,7 +30,7 @@ struct FavouriteBreedsView: View {
             VStack(alignment: .leading, spacing: 16) {
                 averageLifeSpanView
                 BreedsGridView(favourites) { breed in
-                    try? ToggleFavouriteUseCase.toggle(for: breed, on: modelContext)
+                    try? viewModel.toggleFavourite(for: breed)
                 }
             }
             .padding(.horizontal)
@@ -48,5 +48,5 @@ struct FavouriteBreedsView: View {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
     
-    FavouriteBreedsView(viewModel: FavouriteBreedsView.DefaultViewModel( ))
+    FavouriteBreedsView(viewModel: FavouriteBreedsView.DefaultViewModel( toggleFavouriteUseCase: .init(modelContext: context)))
 }

@@ -7,9 +7,11 @@
 
 import SwiftData
 
-enum ToggleFavouriteUseCase {
-    static func toggle(for breed: CatBreed, on context: ModelContext) throws {
+struct ToggleFavouriteUseCase {
+    let modelContext: ModelContext
+    
+    func toggle(for breed: CatBreed) throws {
         breed.isFavourited = !(breed.isFavourited ?? false)
-        try context.save()
+        try modelContext.save()
     }
 }
