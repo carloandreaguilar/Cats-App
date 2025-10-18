@@ -12,22 +12,13 @@ protocol BreedsNetworkClient {
 }
 
 class DefaultBreedsNetworkClient: BreedsNetworkClient {
-    static let defaultBaseURL = URL(string: "https://api.thecatapi.com/v1")!
-    static let defaultApiKey = "live_7RYf9Kx3GFcrGzFd6UVh9yGHAbgIrivdcn9ZaI6aaKXq53jLvS1CUaReccSqNHgs"
     private let networkClient: RestNetworkClient
     private let apiKey: String
     
-    init(restNetworkClient: RestNetworkClient, apiKey: String) {
+    init(restNetworkClient: RestNetworkClient = DefaultRestNetworkClient(), apiKey: String = AppConstants.defaultApiKey) {
         self.networkClient = restNetworkClient
         self.apiKey = apiKey
     }
-    
-    init() {
-        let decoder = JSONDecoder()
-        self.networkClient = .init(baseURL: Self.defaultBaseURL, decoder: decoder)
-        self.apiKey = Self.defaultApiKey
-    }
-
     
     func fetchBreeds(page: Int = 1, pageSize: Int) async throws -> [CatBreedDTO] {
         let path = "/breeds"

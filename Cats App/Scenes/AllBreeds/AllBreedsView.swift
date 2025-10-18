@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AllBreedsView: View {
     static let defaultTitle = "All Breeds"
@@ -14,7 +15,7 @@ struct AllBreedsView: View {
     
     @State private var searchText = ""
     
-    init(viewModel: ViewModel = DefaultViewModel()) {
+    init(viewModel: ViewModel) {
         self.viewModel = viewModel
     }
     
@@ -32,10 +33,15 @@ struct AllBreedsView: View {
                     VStack {
                         BreedsGridView(viewModel.breeds, onlastItemAppear: viewModel.loadNextPageIfNeeded)
                             .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
-                        footer
+                        footer()
                             .padding(.vertical)
                     }
                     .padding(.horizontal)
+                }
+                .overlay(alignment: .bottom) {
+                    if case .loaded(_, let dataSourceType) = viewModel.viewState, dataSourceType == .offline {
+                        offlineBanner()
+                    }
                 }
             case .error:
                 EmptyView()
@@ -52,13 +58,24 @@ struct AllBreedsView: View {
         }
     }
     
-    var footer: some View {
+    private func offlineBanner() -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "wifi.slash")
+            Text("Offline")
+                .font(.footnote.weight(.semibold))
+        }
+        .padding(12)
+        .glassEffect(.regular, in: Capsule())
+        .padding(.bottom, 12)
+    }
+    
+    func footer() -> some View {
         HStack {
             Spacer()
             switch viewModel.viewState {
             case .loadingMore:
                 ProgressView()
-            case .loaded(let hasMore):
+            case .loaded(let hasMore, _):
                 if !hasMore {
                     Text(viewModel.breeds.isEmpty ? "No results" : "Showing all results")
                         .font(.footnote)
@@ -73,5 +90,16 @@ struct AllBreedsView: View {
 }
 
 #Preview {
-    AllBreedsView(viewModel: AllBreedsView.DefaultViewModel())
+    let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
+    let context = container.mainContext
+
+    AllBreedsView(
+        viewModel: AllBreedsView.DefaultViewModel(
+            breedsDataSource: DefaultBreedsDataSource(
+                cacheService: DefaultBreedsCacheService(modelContext: context),
+                networkClient: DefaultBreedsNetworkClient()
+            )
+        )
+    )
+    .modelContainer(container)
 }

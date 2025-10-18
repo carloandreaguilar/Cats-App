@@ -13,7 +13,7 @@ struct CatBreedDTO: Decodable {
     let origin: String?
     let descriptionText: String?
     let temperament: String?
-    let lifeSpan: ClosedRange<Int>?
+    let maxLifespan: Int?
     let imageURL: URL?
     
     init(
@@ -22,7 +22,7 @@ struct CatBreedDTO: Decodable {
         origin: String? = nil,
         descriptionText: String? = nil,
         temperament: String? = nil,
-        lifeSpan: ClosedRange<Int>? = nil,
+        maxLifespan: Int? = nil,
         imageURL: URL? = nil
     ) {
         self.id = id
@@ -30,7 +30,7 @@ struct CatBreedDTO: Decodable {
         self.origin = origin
         self.descriptionText = descriptionText
         self.temperament = temperament
-        self.lifeSpan = lifeSpan
+        self.maxLifespan = maxLifespan
         self.imageURL = imageURL
     }
     
@@ -65,11 +65,14 @@ struct CatBreedDTO: Decodable {
         let origin = try container.decodeIfPresent(String.self, forKey: .origin)
         let descriptionText = try container.decodeIfPresent(String.self, forKey: .descriptionText)
         let temperament = try container.decodeIfPresent(String.self, forKey: .temperament)
-        let lifeSpanRange: ClosedRange<Int>? = try {
-            guard let lifeSpanString = try container.decodeIfPresent(String.self, forKey: .lifeSpan) else {
-                return nil
-            }
-            return Self.parseLifeSpanRange(lifeSpanString)
+        let maxLifespan: Int? = try {
+            let lifeSpanRange: ClosedRange<Int>? = try {
+                guard let lifeSpanString = try container.decodeIfPresent(String.self, forKey: .lifeSpan) else {
+                    return nil
+                }
+                return Self.parseLifeSpanRange(lifeSpanString)
+            }()
+            return lifeSpanRange?.upperBound
         }()
         let imageUrl: URL? = try {
             if container.contains(.image) {
@@ -84,7 +87,7 @@ struct CatBreedDTO: Decodable {
             origin: origin,
             descriptionText: descriptionText,
             temperament: temperament,
-            lifeSpan: lifeSpanRange,
+            maxLifespan: maxLifespan,
             imageURL: imageUrl
         )
     }

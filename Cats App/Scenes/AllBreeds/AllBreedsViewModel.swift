@@ -10,7 +10,7 @@ import Observation
 extension AllBreedsView {
     
     enum ViewState: Equatable {
-        case loadingFirstPage, loadingMore, loaded(hasMore: Bool), error
+        case loadingFirstPage, loadingMore, loaded(hasMore: Bool, dataSourceType: DataSourceType?), error
     }
     
     protocol ViewModel {
@@ -26,36 +26,41 @@ extension AllBreedsView {
         private(set) var viewState: ViewState = .loadingFirstPage
         private(set) var breeds: [CatBreed] = []
         
-        init(breedsDataSource: BreedsDataSource = DefaultBreedsDataSource()) {
+        init(breedsDataSource: BreedsDataSource) {
             self.breedsDataSource = breedsDataSource
         }
         
         func loadFirstPage() async {
             do {
                 viewState = .loadingFirstPage
-                if let page = try await breedsDataSource.loadInitialPage() {
-                    self.breeds = page.items
-                    viewState = .loaded(hasMore: page.hasMore)
-                } else {
-                    viewState = .loaded(hasMore: false)
-                }
+                let page = try await breedsDataSource.loadInitialPage()
+                updateData(from: page)
             } catch {
                 viewState = .error
             }
         }
         
         func loadNextPageIfNeeded() async {
-            guard viewState == .loaded(hasMore: true) else { return }
+            guard case .loaded(hasMore: true, dataSourceType: _) = viewState else { return }
             do {
                 viewState = .loadingMore
-                if let page = try await breedsDataSource.loadNextPage() {
-                    self.breeds.append(contentsOf: page.items)
-                    viewState = .loaded(hasMore: page.hasMore)
-                } else {
-                    viewState = .loaded(hasMore: false)
-                }
+                let page = try await breedsDataSource.loadNextPage()
+                updateData(from: page)
             } catch {
                 viewState = .error
+            }
+        }
+        
+        private func updateData(from page: Page<CatBreed>?) {
+            if let page = page {
+                if page.page == 1 {
+                    breeds = page.items
+                } else {
+                    breeds.append(contentsOf: page.items)
+                }
+                viewState = .loaded(hasMore: page.hasMore, dataSourceType: page.dataSourceType)
+            } else {
+                viewState = .loaded(hasMore: false, dataSourceType: nil)
             }
         }
     }

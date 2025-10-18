@@ -9,4 +9,5 @@ struct Page<T> {
     let items: [T]
     let page: Int
     let hasMore: Bool
+    let dataSourceType: DataSourceType
 }

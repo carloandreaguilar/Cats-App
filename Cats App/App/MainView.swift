@@ -9,14 +9,25 @@ import SwiftUI
 import SwiftData
 
 struct MainView: View {
+    @Environment(\.modelContext) var modelContext
+    
     var body: some View {
         TabView {
+            
             Tab(AllBreedsView.defaultTitle, systemImage: "cat") {
                 NavigationStack {
-                    AllBreedsView()
-                        .navigationTitle(AllBreedsView.defaultTitle)
+                    AllBreedsView(
+                        viewModel: AllBreedsView.DefaultViewModel(
+                            breedsDataSource: DefaultBreedsDataSource(
+                                cacheService: DefaultBreedsCacheService(modelContext: modelContext),
+                                networkClient: DefaultBreedsNetworkClient()
+                            )
+                        )
+                    )
+                    .navigationTitle(AllBreedsView.defaultTitle)
                 }
             }
+            
             Tab(FavouriteBreedsView.defaultTitle, systemImage: "heart") {
                 NavigationStack {
                     FavouriteBreedsView()

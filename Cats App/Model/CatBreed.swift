@@ -15,8 +15,10 @@ final class CatBreed {
     var origin: String?
     var descriptionText: String?
     var temperament: String?
-    var lifeSpan: ClosedRange<Int>?
+    var maxLifespan: Int?
     var imageURL: URL?
+    
+    var cachedAt: Date?
     
     init(_ dto: CatBreedDTO) {
         self.id = dto.id
@@ -24,8 +26,19 @@ final class CatBreed {
         self.origin = dto.origin
         self.descriptionText = dto.descriptionText
         self.temperament = dto.temperament
-        self.lifeSpan = dto.lifeSpan
+        self.maxLifespan = dto.maxLifespan
         self.imageURL = dto.imageURL
+        self.cachedAt = .now
+    }
+    
+    func update(from updatedBreed: CatBreed) {
+        self.name = updatedBreed.name
+        self.origin = updatedBreed.origin
+        self.descriptionText = updatedBreed.descriptionText
+        self.temperament = updatedBreed.temperament
+        self.maxLifespan = updatedBreed.maxLifespan
+        self.imageURL = updatedBreed.imageURL
+        self.cachedAt = .now
     }
 }
 
