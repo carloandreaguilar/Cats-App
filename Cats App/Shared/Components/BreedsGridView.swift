@@ -18,24 +18,30 @@ struct BreedsGridView: View {
         GridItem(.flexible(), spacing: 12)
     ]
     
-    private let onFavouriteTapped: ((CatBreed) -> Void)
+    private let onTap: ((CatBreed) -> Void)
+    private let onFavouriteTap: ((CatBreed) -> Void)
     private let onLastItemAppear: (() async -> Void)?
     
-    init(_ breeds: [CatBreed], onFavouriteTapped: @escaping ((CatBreed) -> Void), onlastItemAppear: (() async -> Void)? = nil) {
+    init(_ breeds: [CatBreed], onTap: @escaping ((CatBreed) -> Void), onFavouriteTap: @escaping ((CatBreed) -> Void), onlastItemAppear: (() async -> Void)? = nil) {
         self.breeds = breeds
-        self.onFavouriteTapped = onFavouriteTapped
+        self.onTap = onTap
+        self.onFavouriteTap = onFavouriteTap
         self.onLastItemAppear = onlastItemAppear
     }
     
     var body: some View {
         LazyVGrid(columns: gridColumns, spacing: 12) {
             ForEach(breeds, id: \.id) { breed in
-                gridItem(for: breed)
-                    .task {
-                        if breed.id == breeds.last?.id {
-                            await onLastItemAppear?()
-                        }
+                Button {
+                    onTap(breed)
+                } label: {
+                    gridItem(for: breed)
+                }
+                .task {
+                    if breed.id == breeds.last?.id {
+                        await onLastItemAppear?()
                     }
+                }
             }
         }
         .animation(.default, value: breeds.count)
@@ -46,12 +52,13 @@ struct BreedsGridView: View {
             ZStack(alignment: .topTrailing) {
                 image(url: breed.imageURL)
                 Button {
-                    onFavouriteTapped(breed)
+                    onFavouriteTap(breed)
                 } label: {
                     Image(systemName: (breed.isFavourited ?? false) ? "heart.fill" : "heart")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(height: favouriteButtonHeight)
+                        ///  Making sure the minimum tappable area conforms to guidelines
                         .padding((max(0, .minimumHitSize - favouriteButtonHeight)) / 2)
                         .foregroundStyle(Color.primary)
                 }
@@ -60,6 +67,7 @@ struct BreedsGridView: View {
                 .lineLimit(1)
                 .fixedSize(horizontal: false, vertical: true)
                 .font(.headline)
+                .foregroundStyle(Color.primary)
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
@@ -87,7 +95,6 @@ struct BreedsGridView: View {
                             }
                     }
                 }
-                .animation(.default, value: true)
             } else {
                 emptyImageBackground
                     .overlay {

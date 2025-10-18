@@ -11,12 +11,17 @@ import SwiftData
 struct AllBreedsView: View {
     static let defaultTitle = "All Breeds"
     
+    @Environment(\.modelContext) var modelContext
+    
     @State private var viewModel: ViewModel
+    
+    @Binding private var navigationPath: NavigationPath
     
     @State private var searchText = ""
     
-    init(viewModel: ViewModel) {
+    init(viewModel: ViewModel, navigationPath: Binding<NavigationPath>) {
         self.viewModel = viewModel
+        self._navigationPath = navigationPath
     }
     
     var body: some View {
@@ -31,7 +36,9 @@ struct AllBreedsView: View {
             case .loadingMore, .loaded:
                 ScrollView {
                     VStack {
-                        BreedsGridView(viewModel.breeds, onFavouriteTapped: { breed in
+                        BreedsGridView(viewModel.breeds, onTap: { breed in
+                            navigationPath.append(BreedDestination.detail(breed: breed))
+                        }, onFavouriteTap: { breed in
                             try? viewModel.toggleFavourite(for: breed)
                         }, onlastItemAppear: {
                             await viewModel.loadNextPageIfNeeded()
@@ -60,6 +67,12 @@ struct AllBreedsView: View {
                 await viewModel.loadFirstPage()
             }
         }
+        .navigationDestination(for: BreedDestination.self, destination: { destination in
+            switch destination {
+            case .detail(let breed):
+                BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: .init(modelContext: modelContext)))
+            }
+        })
     }
     
     private func offlineBanner() -> some View {
@@ -103,7 +116,7 @@ struct AllBreedsView: View {
                 networkService: DefaultBreedsNetworkService(),
                 persistenceService: DefaultBreedsPersistenceService(modelContext: context)
             ), toggleFavouriteUseCase: .init(modelContext: context)
-        )
+        ), navigationPath: .constant(NavigationPath())
     )
     .modelContainer(container)
 }

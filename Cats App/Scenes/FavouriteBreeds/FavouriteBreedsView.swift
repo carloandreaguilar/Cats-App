@@ -15,14 +15,17 @@ struct FavouriteBreedsView: View {
     
     @State private var viewModel: ViewModel
     
+    @Binding private var navigationPath: NavigationPath
+    
     @Query(
         filter: #Predicate { $0.isFavourited == true },
         sort: [SortDescriptor(\CatBreed.name)]
     )
     private var favourites: [CatBreed]
     
-    init(viewModel: ViewModel) {
+    init(viewModel: ViewModel, navigationPath: Binding<NavigationPath>) {
         self.viewModel = viewModel
+        self._navigationPath = navigationPath
     }
     
     var body: some View {
@@ -30,11 +33,19 @@ struct FavouriteBreedsView: View {
             VStack(alignment: .leading, spacing: 16) {
                 averageLifeSpanView
                 BreedsGridView(favourites) { breed in
+                    navigationPath.append(BreedDestination.detail(breed: breed))
+                } onFavouriteTap: { breed in
                     try? viewModel.toggleFavourite(for: breed)
                 }
             }
             .padding(.horizontal)
         }
+        .navigationDestination(for: BreedDestination.self, destination: { destination in
+            switch destination {
+            case .detail(let breed):
+                BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: .init(modelContext: modelContext)))
+            }
+        })
     }
     
     var averageLifeSpanView: some View {
@@ -48,5 +59,5 @@ struct FavouriteBreedsView: View {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
     
-    FavouriteBreedsView(viewModel: FavouriteBreedsView.DefaultViewModel( toggleFavouriteUseCase: .init(modelContext: context)))
+    FavouriteBreedsView(viewModel: FavouriteBreedsView.DefaultViewModel( toggleFavouriteUseCase: .init(modelContext: context)), navigationPath: .constant(NavigationPath()))
 }
