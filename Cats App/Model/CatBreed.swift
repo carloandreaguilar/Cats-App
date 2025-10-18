@@ -18,7 +18,8 @@ final class CatBreed {
     var maxLifespan: Int?
     var imageURL: URL?
     
-    var cachedAt: Date?
+    var isFavourited: Bool?
+    var persistedAt: Date?
     
     init(_ dto: CatBreedDTO) {
         self.id = dto.id
@@ -28,17 +29,17 @@ final class CatBreed {
         self.temperament = dto.temperament
         self.maxLifespan = dto.maxLifespan
         self.imageURL = dto.imageURL
-        self.cachedAt = .now
+        self.persistedAt = .now
     }
     
-    func update(from updatedBreed: CatBreed) {
-        self.name = updatedBreed.name
-        self.origin = updatedBreed.origin
-        self.descriptionText = updatedBreed.descriptionText
-        self.temperament = updatedBreed.temperament
-        self.maxLifespan = updatedBreed.maxLifespan
-        self.imageURL = updatedBreed.imageURL
-        self.cachedAt = .now
+    func update(from dto: CatBreedDTO) {
+        self.name = dto.name
+        self.origin = dto.origin
+        self.descriptionText = dto.descriptionText
+        self.temperament = dto.temperament
+        self.maxLifespan = dto.maxLifespan
+        self.imageURL = dto.imageURL
+        self.persistedAt = .now
     }
 }
 

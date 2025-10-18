@@ -11,6 +11,8 @@ import SwiftData
 struct AllBreedsView: View {
     static let defaultTitle = "All Breeds"
     
+    @Environment(\.modelContext) var modelContext
+    
     @State private var viewModel: ViewModel
     
     @State private var searchText = ""
@@ -31,8 +33,12 @@ struct AllBreedsView: View {
             case .loadingMore, .loaded:
                 ScrollView {
                     VStack {
-                        BreedsGridView(viewModel.breeds, onlastItemAppear: viewModel.loadNextPageIfNeeded)
-                            .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
+                        BreedsGridView(viewModel.breeds, onFavouriteTapped: { breed in
+                            try? ToggleFavouriteUseCase.toggle(for: breed, on: modelContext)
+                        }, onlastItemAppear: {
+                            await viewModel.loadNextPageIfNeeded()
+                        })
+                        .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
                         footer()
                             .padding(.vertical)
                     }
@@ -96,8 +102,8 @@ struct AllBreedsView: View {
     AllBreedsView(
         viewModel: AllBreedsView.DefaultViewModel(
             breedsDataSource: DefaultBreedsDataSource(
-                cacheService: DefaultBreedsCacheService(modelContext: context),
-                networkClient: DefaultBreedsNetworkClient()
+                networkService: DefaultBreedsNetworkService(),
+                persistenceService: DefaultBreedsPersistenceService(modelContext: context)
             )
         )
     )

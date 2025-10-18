@@ -19,8 +19,8 @@ struct MainView: View {
                     AllBreedsView(
                         viewModel: AllBreedsView.DefaultViewModel(
                             breedsDataSource: DefaultBreedsDataSource(
-                                cacheService: DefaultBreedsCacheService(modelContext: modelContext),
-                                networkClient: DefaultBreedsNetworkClient()
+                                networkService: DefaultBreedsNetworkService(),
+                                persistenceService: DefaultBreedsPersistenceService(modelContext: modelContext)
                             )
                         )
                     )
@@ -30,7 +30,10 @@ struct MainView: View {
             
             Tab(FavouriteBreedsView.defaultTitle, systemImage: "heart") {
                 NavigationStack {
-                    FavouriteBreedsView()
+                    FavouriteBreedsView(
+                        viewModel: FavouriteBreedsView.DefaultViewModel(
+                           )
+                    )
                         .navigationTitle(FavouriteBreedsView.defaultTitle)
                 }
             }

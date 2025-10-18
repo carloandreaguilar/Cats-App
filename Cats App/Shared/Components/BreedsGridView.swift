@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CachedAsyncImage
+import SwiftData
 
 struct BreedsGridView: View {
     private let breeds: [CatBreed]
@@ -17,10 +18,12 @@ struct BreedsGridView: View {
         GridItem(.flexible(), spacing: 12)
     ]
     
+    private let onFavouriteTapped: ((CatBreed) -> Void)
     private let onLastItemAppear: (() async -> Void)?
     
-    init(_ breeds: [CatBreed], onlastItemAppear: (() async -> Void)? = nil) {
+    init(_ breeds: [CatBreed], onFavouriteTapped: @escaping ((CatBreed) -> Void), onlastItemAppear: (() async -> Void)? = nil) {
         self.breeds = breeds
+        self.onFavouriteTapped = onFavouriteTapped
         self.onLastItemAppear = onlastItemAppear
     }
     
@@ -35,6 +38,7 @@ struct BreedsGridView: View {
                     }
             }
         }
+        .animation(.default, value: breeds.count)
     }
     
     func gridItem(for breed: CatBreed) -> some View {
@@ -42,9 +46,9 @@ struct BreedsGridView: View {
             ZStack(alignment: .topTrailing) {
                 image(url: breed.imageURL)
                 Button {
-                    
+                    onFavouriteTapped(breed)
                 } label: {
-                    Image(systemName: "heart")
+                    Image(systemName: (breed.isFavourited ?? false) ? "heart.fill" : "heart")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(height: favouriteButtonHeight)
@@ -58,6 +62,7 @@ struct BreedsGridView: View {
                 .font(.headline)
         }
         .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
     }
     
     func image(url: URL?) -> some View {
@@ -92,8 +97,8 @@ struct BreedsGridView: View {
                 
             }
         }
-        .clipped()
         .aspectRatio(1, contentMode: .fit)
+        .clipped()
         .cornerRadius(imageCornerRadius)
     }
     

@@ -7,11 +7,11 @@
 
 import Foundation
 
-protocol BreedsNetworkClient {
+protocol BreedsNetworkService {
     func fetchBreeds(page: Int, pageSize: Int) async throws -> [CatBreedDTO]
 }
 
-class DefaultBreedsNetworkClient: BreedsNetworkClient {
+class DefaultBreedsNetworkService: BreedsNetworkService {
     private let networkClient: RestNetworkClient
     private let apiKey: String
     

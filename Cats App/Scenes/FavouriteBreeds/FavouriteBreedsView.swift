@@ -6,13 +6,22 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct FavouriteBreedsView: View {
     static let defaultTitle = "Favourites"
     
+    @Environment(\.modelContext) var modelContext
+    
     @State private var viewModel: ViewModel
     
-    init(viewModel: ViewModel = DefaultViewModel()) {
+    @Query(
+        filter: #Predicate { $0.isFavourited == true },
+        sort: [SortDescriptor(\CatBreed.name)]
+    )
+    private var favourites: [CatBreed]
+    
+    init(viewModel: ViewModel) {
         self.viewModel = viewModel
     }
     
@@ -20,22 +29,24 @@ struct FavouriteBreedsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 averageLifeSpanView
-                BreedsGridView(viewModel.breeds)
+                BreedsGridView(favourites) { breed in
+                    try? ToggleFavouriteUseCase.toggle(for: breed, on: modelContext)
+                }
             }
             .padding(.horizontal)
-        }
-        .onAppear {
-            viewModel.loadBreeds()
         }
     }
     
     var averageLifeSpanView: some View {
-        Text("Average lifespan: ")
+        Text("Average lifespan: \(String(format: "%.1f", viewModel.averageLifespan(for: favourites)))")
             .font(.headline)
             .foregroundColor(.secondary)
     }
 }
 
 #Preview {
-    FavouriteBreedsView()
+    let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
+    let context = container.mainContext
+    
+    FavouriteBreedsView(viewModel: FavouriteBreedsView.DefaultViewModel( ))
 }

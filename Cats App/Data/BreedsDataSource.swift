@@ -13,15 +13,15 @@ protocol BreedsDataSource {
 }
 
 class DefaultBreedsDataSource: BreedsDataSource {
-    private let cacheService: BreedsCacheService
-    private let networkClient: BreedsNetworkClient
+    private let networkService: BreedsNetworkService
+    private let persistenceService: BreedsPersistenceService
     private let pageSize: Int
     private var currentPage = 1
     private var currentTask: Task<Page<CatBreed>?, Error>? = nil
     
-    init(cacheService: BreedsCacheService, networkClient: BreedsNetworkClient, pageSize: Int = AppConstants.defaultPageSize) {
-        self.cacheService = cacheService
-        self.networkClient = networkClient
+    init(networkService: BreedsNetworkService, persistenceService: BreedsPersistenceService, pageSize: Int = AppConstants.defaultPageSize) {
+        self.networkService = networkService
+        self.persistenceService = persistenceService
         self.pageSize = pageSize
     }
     
@@ -31,7 +31,7 @@ class DefaultBreedsDataSource: BreedsDataSource {
             return try await loadPageFromNetwork(page: currentPage)
         } catch {
             if error is CancellationError { throw error }
-            return try await loadPageFromCache(page: currentPage)
+            return try await loadPageFromPersistence(page: currentPage)
         }
     }
     
@@ -41,7 +41,7 @@ class DefaultBreedsDataSource: BreedsDataSource {
         do {
             return try await self.loadPageFromNetwork(page: nextPage)
         } catch {
-            return try await loadPageFromCache(page: nextPage)
+            return try await loadPageFromPersistence(page: nextPage)
         }
     }
     
@@ -50,17 +50,17 @@ class DefaultBreedsDataSource: BreedsDataSource {
         let newTask = Task<Page<CatBreed>?, Error> { [weak self] in
             guard let self else { throw NSError() }
             
-            let newBreeds = try await networkClient.fetchBreeds(page: page, pageSize: pageSize).map { CatBreed($0) }
+            let newBreedDtos = try await networkService.fetchBreeds(page: page, pageSize: pageSize)
             
             guard !Task.isCancelled else {
                 throw CancellationError()
             }
             
-            guard !newBreeds.isEmpty else {
+            guard !newBreedDtos.isEmpty else {
                 return nil
             }
             
-            try cacheService.update(newBreeds)
+            let newBreeds = try persistenceService.persist(newBreedDtos)
             
             let newPage = Page(items: newBreeds, page: page, hasMore: newBreeds.count >= pageSize, dataSourceType: .online)
             currentPage = page
@@ -70,11 +70,11 @@ class DefaultBreedsDataSource: BreedsDataSource {
         return try await newTask.value
     }
     
-    private func loadPageFromCache(page: Int) async throws -> Page<CatBreed>? {
+    private func loadPageFromPersistence(page: Int) async throws -> Page<CatBreed>? {
         currentTask?.cancel()
         let newTask = Task<Page<CatBreed>?, Error> { [weak self] in
             guard let self else { return nil }
-            let breeds = try cacheService.fetchCachedBreeds(page: page, pageSize: pageSize)
+            let breeds = try persistenceService.fetchPersistedBreeds(page: page, pageSize: pageSize)
             
             guard !Task.isCancelled else {
                 throw CancellationError()
