@@ -20,14 +20,40 @@ struct BreedDetailView: View {
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 16) {
                 image
                 if let descriptionText = viewModel.breed.descriptionText {
-                    Text(descriptionText)
-                        .multilineTextAlignment(.leading)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("About".uppercased())
+                            .foregroundStyle(.secondary)
+                            .font(.system(size: 12, weight: .bold))
+                        Text(descriptionText)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+                
+                if let temperament = viewModel.breed.temperament {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Temperament".uppercased())
+                            .foregroundStyle(.secondary)
+                            .font(.system(size: 12, weight: .bold))
+                        Text(temperament)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+                
+                if let origin = viewModel.breed.origin {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Origin".uppercased())
+                            .foregroundStyle(.secondary)
+                            .font(.system(size: 12, weight: .bold))
+                        Text(origin)
+                            .multilineTextAlignment(.leading)
+                    }
                 }
             }
             .padding(.horizontal)
+            .padding(.bottom)
         }
         .navigationTitle(viewModel.breed.name)
         .navigationBarTitleDisplayMode(.inline)

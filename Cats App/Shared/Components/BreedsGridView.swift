@@ -57,7 +57,7 @@ struct BreedsGridView: View {
                 .font(.system(size: 18))
                 .foregroundStyle(Color.primary)
             Button {
-                onTap(breed)
+                onFavouriteTap(breed)
             } label: {
                 Image(systemName: (breed.isFavourited ?? false) ? "heart.fill" : "heart")
                     .resizable()
