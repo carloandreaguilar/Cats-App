@@ -52,7 +52,7 @@ struct BreedDetailView: View {
                             .overlay(
                                 /// Thin border around image, to make image shape visible when image background matches the app background.
                                 RoundedRectangle(cornerRadius: imageCornerRadius)
-                                    .stroke(Color.secondary, lineWidth: 1)
+                                    .stroke(Color.secondary, lineWidth: 0.5)
                             )
                     case .failure:
                         emptyImageBackground

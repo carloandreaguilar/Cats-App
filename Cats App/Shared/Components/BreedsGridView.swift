@@ -14,8 +14,8 @@ struct BreedsGridView: View {
     private let imageCornerRadius: CGFloat = 12
     private let favouriteButtonHeight: CGFloat = 20
     private let gridColumns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
     ]
     
     private let onTap: ((CatBreed) -> Void)
@@ -49,30 +49,30 @@ struct BreedsGridView: View {
     }
     
     func gridItem(for breed: CatBreed) -> some View {
-        VStack(spacing: 4) {
-            ZStack(alignment: .topTrailing) {
-                image(url: breed.imageURL)
-                Button {
-                    onFavouriteTap(breed)
-                } label: {
-                    Image(systemName: (breed.isFavourited ?? false) ? "heart.fill" : "heart")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: favouriteButtonHeight)
-                        ///  Making sure the minimum tappable area conforms to guidelines
-                        .padding((max(0, .minimumHitSize - favouriteButtonHeight)) / 2)
-                        .foregroundStyle(Color.primary)
-                }
-                .buttonStyle(.plain)
-            }
+        VStack(alignment: .leading, spacing: 8) {
+            image(url: breed.imageURL)
             Text(breed.name)
                 .lineLimit(1)
                 .fixedSize(horizontal: false, vertical: true)
-                .font(.headline)
+                .font(.system(size: 18))
                 .foregroundStyle(Color.primary)
+            Button {
+                onFavouriteTap(breed)
+            } label: {
+                Image(systemName: (breed.isFavourited ?? false) ? "heart.fill" : "heart")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: favouriteButtonHeight)
+                    .foregroundStyle(Color.primary)
+                ///  Making sure the tappable area conforms to guidelines minimum of 44x44
+                    .extraTappableArea((max(0, .minimumHitSize - favouriteButtonHeight)) / 2)
+                    
+            }
+            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
+        .padding(.bottom, 8)
     }
     
     func image(url: URL?) -> some View {
@@ -88,6 +88,11 @@ struct BreedsGridView: View {
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: geometryReader.size.width, height: geometryReader.size.width, alignment: .center)
+                                .overlay(
+                                    /// Thin border around image, to make image shape visible when image background matches the app background.
+                                    RoundedRectangle(cornerRadius: imageCornerRadius)
+                                        .stroke(Color.secondary, lineWidth: 0.5)
+                                )
                         }
                     case .failure:
                         emptyImageBackground
