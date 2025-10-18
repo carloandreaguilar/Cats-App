@@ -50,9 +50,17 @@ struct FavouriteBreedsView: View {
     }
     
     var averageLifeSpanView: some View {
-        Text("Average lifespan: \(String(format: "%.1f", viewModel.averageLifespan(for: favourites)))")
-            .font(.headline)
-            .foregroundColor(.secondary)
+        let value = viewModel.averageLifespan(for: favourites)
+        let formatted = String(format: "%.1f", value)
+        let trimmed = formatted.hasSuffix(".0") ? String(formatted.dropLast(2)) : formatted
+        return VStack(alignment: .leading, spacing: 4) {
+            Text("Average lifespan".uppercased())
+                .foregroundStyle(.secondary)
+                .font(.system(size: 12, weight: .bold))
+            Text("\(trimmed) years")
+                .foregroundStyle(.primary)
+                .font(.system(size: 18, weight: .bold))
+        }
     }
 }
 
