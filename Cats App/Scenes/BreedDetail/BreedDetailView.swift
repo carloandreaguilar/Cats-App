@@ -39,9 +39,11 @@ struct BreedDetailView: View {
                 CachedAsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:
-                        Rectangle()
-                            .fill(.clear)
+                        emptyImageBackground
                             .aspectRatio(1.0, contentMode: .fit)
+                            .overlay {
+                                ProgressView()
+                            }
                     case .success(let image):
                         image
                             .resizable()
@@ -52,17 +54,21 @@ struct BreedDetailView: View {
                                 RoundedRectangle(cornerRadius: imageCornerRadius)
                                     .stroke(Color.secondary, lineWidth: 1)
                             )
-                    default:
+                    case .failure:
                         emptyImageBackground
                             .aspectRatio(1.0, contentMode: .fit)
                             .overlay {
                                 Image(systemName: "exclamationmark.triangle.fill")
                                     .foregroundStyle(.secondary)
                             }
+                    default:
+                        emptyImageBackground
+                            .aspectRatio(1.0, contentMode: .fit)
                     }
                 }
             } else {
                 emptyImageBackground
+                    .aspectRatio(1.0, contentMode: .fit)
                     .overlay {
                         Text("No image")
                             .foregroundStyle(.secondary)

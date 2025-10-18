@@ -37,6 +37,7 @@ struct BreedsGridView: View {
                 } label: {
                     gridItem(for: breed)
                 }
+                .buttonStyle(.plain)
                 .task {
                     if breed.id == breeds.last?.id {
                         await onLastItemAppear?()
@@ -62,6 +63,7 @@ struct BreedsGridView: View {
                         .padding((max(0, .minimumHitSize - favouriteButtonHeight)) / 2)
                         .foregroundStyle(Color.primary)
                 }
+                .buttonStyle(.plain)
             }
             Text(breed.name)
                 .lineLimit(1)
@@ -87,14 +89,17 @@ struct BreedsGridView: View {
                                 .scaledToFill()
                                 .frame(width: geometryReader.size.width, height: geometryReader.size.width, alignment: .center)
                         }
-                    default:
+                    case .failure:
                         emptyImageBackground
                             .overlay {
                                 Image(systemName: "exclamationmark.triangle.fill")
                                     .foregroundStyle(.secondary)
                             }
+                    default:
+                        emptyImageBackground
                     }
                 }
+                
             } else {
                 emptyImageBackground
                     .overlay {

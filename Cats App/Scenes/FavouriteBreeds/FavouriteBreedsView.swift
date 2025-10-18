@@ -32,11 +32,12 @@ struct FavouriteBreedsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 averageLifeSpanView
-                BreedsGridView(favourites) { breed in
+                BreedsGridView(favourites,
+                               onTap: { breed in
                     navigationPath.append(BreedDestination.detail(breed: breed))
-                } onFavouriteTap: { breed in
+                }, onFavouriteTap: { breed in
                     try? viewModel.toggleFavourite(for: breed)
-                }
+                })
             }
             .padding(.horizontal)
         }
