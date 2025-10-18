@@ -12,7 +12,7 @@ import SwiftData
 struct BreedsGridView: View {
     private let breeds: [CatBreed]
     private let imageCornerRadius: CGFloat = 12
-    private let favouriteButtonHeight: CGFloat = 20
+    private let favouriteButtonSize: CGFloat = 20
     private let gridColumns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
@@ -57,16 +57,15 @@ struct BreedsGridView: View {
                 .font(.system(size: 18))
                 .foregroundStyle(Color.primary)
             Button {
-                onFavouriteTap(breed)
+                onTap(breed)
             } label: {
                 Image(systemName: (breed.isFavourited ?? false) ? "heart.fill" : "heart")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(height: favouriteButtonHeight)
+                    .frame(height: favouriteButtonSize)
                     .foregroundStyle(Color.primary)
                 ///  Making sure the tappable area conforms to guidelines minimum of 44x44
-                    .extraTappableArea((max(0, .minimumHitSize - favouriteButtonHeight)) / 2)
-                    
+                    .extraTappableArea((max(0, .minimumHitSize - favouriteButtonSize)) / 2)
             }
             .buttonStyle(.plain)
         }

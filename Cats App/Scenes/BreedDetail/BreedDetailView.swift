@@ -31,6 +31,16 @@ struct BreedDetailView: View {
         }
         .navigationTitle(viewModel.breed.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    try? viewModel.toggleFavourite()
+                } label: {
+                    Image(systemName: (viewModel.breed.isFavourited ?? false) ? "heart.fill" : "heart")
+                        .foregroundStyle(Color.primary)
+                }
+            }
+        }
     }
     
     var image: some View {
