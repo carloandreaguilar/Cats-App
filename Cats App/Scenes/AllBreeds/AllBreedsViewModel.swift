@@ -25,6 +25,7 @@ extension AllBreedsView {
         private let breedsDataSource: BreedsDataSource
         private(set) var viewState: ViewState = .loadingFirstPage
         private(set) var breeds: [CatBreed] = []
+        private var latestDataSourceType: DataSourceType?
         
         init(breedsDataSource: BreedsDataSource) {
             self.breedsDataSource = breedsDataSource
@@ -58,9 +59,10 @@ extension AllBreedsView {
                 } else {
                     breeds.append(contentsOf: page.items)
                 }
+                latestDataSourceType = page.dataSourceType
                 viewState = .loaded(hasMore: page.hasMore, dataSourceType: page.dataSourceType)
             } else {
-                viewState = .loaded(hasMore: false, dataSourceType: nil)
+                viewState = .loaded(hasMore: false, dataSourceType: latestDataSourceType)
             }
         }
     }
