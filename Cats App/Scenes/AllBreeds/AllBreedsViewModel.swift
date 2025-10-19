@@ -16,17 +16,19 @@ extension AllBreedsView {
     }
     
     protocol ViewModel {
+        var query: String { get set }
         var viewState: ViewState { get }
         var breeds: [CatBreed] { get }
-        func loadFirstPage(query: String?) async throws
+        func loadFirstPage() async throws
         func loadNextPageIfNeeded() async
-        func activateOfflineMode(query: String?) async throws
-        func attemptReconnect(query: String?) async throws
+        func activateOfflineMode() async throws
+        func attemptReconnect() async throws
         func toggleFavourite(for breed: CatBreed) throws
     }
     
     @Observable
     class DefaultViewModel: ViewModel {
+        var query: String = ""
         private let breedsDataSource: BreedsDataSource
         private let toggleFavouriteUseCase: ToggleFavouriteUseCase
         private(set) var viewState: ViewState = .loadingFirstPage
@@ -39,11 +41,17 @@ extension AllBreedsView {
             self.toggleFavouriteUseCase = toggleFavouriteUseCase
         }
         
-        func loadFirstPage(query: String?) async throws {
+        func loadFirstPage() async throws {
+            viewState = .loadingFirstPage
             do {
-                try await loadFirstPage(query: query, mode: .online)
+                try await loadFirstPage(mode: .online)
             } catch {
-                try await loadFirstPage(query: query, mode: .offline)
+                do {
+                    try await loadFirstPage(mode: .offline)
+                } catch {
+                    viewState = .loaded(hasMore: false, hasConnection: hasConnection, dataSourceMode: currentDataMode)
+                    throw error
+                }
             }
         }
         
@@ -61,12 +69,13 @@ extension AllBreedsView {
             }
         }
         
-        func activateOfflineMode(query: String?) async throws {
+        func activateOfflineMode() async throws {
             currentDataMode = .offline
-            try await loadFirstPage(query: query, mode: .offline)
+            viewState = .loadingFirstPage
+            try await loadFirstPage(mode: .offline)
         }
         
-        func attemptReconnect(query: String?) async throws {
+        func attemptReconnect() async throws {
             guard currentDataMode == .offline else { return }
             do {
                 let page = try await breedsDataSource.loadInitialPage(query: query, mode: .online)
@@ -80,16 +89,15 @@ extension AllBreedsView {
             try toggleFavouriteUseCase.toggle(for: breed)
         }
         
-        private func loadFirstPage(query: String?, mode: DataSourceMode) async throws {
+        private func loadFirstPage(mode: DataSourceMode) async throws {
             do {
-                viewState = .loadingFirstPage
                 let page = try await breedsDataSource.loadInitialPage(query: query, mode: mode)
                 updateData(from: page)
             } catch {
                 if error is NetworkError {
                     hasConnection = false
-                    viewState = .loaded(hasMore: true, hasConnection: hasConnection, dataSourceMode: currentDataMode)
                 }
+                throw error
             }
         }
         

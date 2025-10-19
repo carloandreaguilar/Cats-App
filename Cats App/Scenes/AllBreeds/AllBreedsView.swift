@@ -16,8 +16,6 @@ struct AllBreedsView: View {
     @State private var viewModel: ViewModel
     
     @Binding private var navigationPath: NavigationPath
-    
-    @State private var searchText = ""
     @State private var presentingOfflineAlert = false
     
     init(viewModel: ViewModel, navigationPath: Binding<NavigationPath>) {
@@ -64,22 +62,22 @@ struct AllBreedsView: View {
                 }
             }
         }
-        .searchable(text: $searchText)
+        .searchable(text: $viewModel.query)
         .onSubmit(of: .search) {
-            Task { try? await viewModel.loadFirstPage(query: searchText) }
+            Task { try? await viewModel.loadFirstPage() }
             
         }
-        .onChange(of: searchText) { oldValue, newValue in
+        .onChange(of: viewModel.query) { oldValue, newValue in
             if !textIsEmpty(oldValue) && textIsEmpty(newValue) {
-                Task { try? await viewModel.loadFirstPage(query: searchText) }
+                Task { try? await viewModel.loadFirstPage() }
             }
         }
         .refreshable {
-            try? await viewModel.loadFirstPage(query: searchText)
+            try? await viewModel.loadFirstPage()
         }
         .task {
             if viewModel.breeds.isEmpty {
-                try? await viewModel.loadFirstPage(query: searchText)
+                try? await viewModel.loadFirstPage()
             }
         }
         .navigationDestination(for: BreedDestination.self, destination: { destination in
@@ -99,7 +97,7 @@ struct AllBreedsView: View {
     
     private func noConnectionBanner() -> some View {
         Button {
-            Task { try? await viewModel.activateOfflineMode(query: searchText) }
+            Task { try? await viewModel.activateOfflineMode() }
         } label: {
             VStack {
                 HStack {
@@ -124,7 +122,7 @@ struct AllBreedsView: View {
         Button {
             Task {
                 do {
-                    try await viewModel.attemptReconnect(query: searchText)
+                    try await viewModel.attemptReconnect()
                 } catch {
                     presentingOfflineAlert = true
                 }
