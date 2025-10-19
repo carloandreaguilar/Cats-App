@@ -67,7 +67,6 @@ extension BreedsView {
         
         func activateOfflineMode() async throws {
             currentDataMode = .offline
-            viewState = .loadingFirstPage
             try await loadFirstPage(mode: .offline)
         }
         

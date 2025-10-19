@@ -18,6 +18,7 @@ struct BreedsView: View {
     @Binding private var navigationPath: NavigationPath
     @State private var presentingOfflineAlert = false
     @State private var showingReconnectedToast = false
+    @State private var animatingOfflineBanner = false
     
     @State private var scrollViewId = UUID()
     
@@ -75,14 +76,19 @@ struct BreedsView: View {
                             offlineModeBanner()
                         } else if !properties.hasConnection {
                             noConnectionBanner()
-                        } else if showingReconnectedToast {
-                            reconnectedToast()
                         }
                     default:
                         EmptyView()
                     }
                 }
                 .animation(.default, value: viewModel.viewState)
+            }
+            .overlay(alignment: .bottom) {
+                Group {
+                    if showingReconnectedToast {
+                        reconnectedToast()
+                    }
+                }
                 .animation(.default, value: showingReconnectedToast)
             }
             .searchable(text: $viewModel.query)
@@ -91,7 +97,7 @@ struct BreedsView: View {
                 
             }
             .onChange(of: viewModel.query) { oldValue, newValue in
-                if !textIsEmpty(oldValue) && textIsEmpty(newValue) {
+                if textWasCleared(newValue: newValue, oldValue: oldValue) {
                     Task { try? await viewModel.loadFirstPage() }
                 }
             }
@@ -161,13 +167,14 @@ struct BreedsView: View {
             .glassEffect(.clear.tint(.red.opacity(0.75)), in: Capsule())
             .padding(.bottom)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(BouncePressStyle())
     }
     
     private func offlineModeBanner() -> some View {
         Button {
             bannersHapticGenerator.prepare()
             bannersHapticGenerator.impactOccurred()
+            animatingOfflineBanner = true
             Task {
                 do {
                     try await viewModel.attemptNetworkRefresh()
@@ -175,24 +182,31 @@ struct BreedsView: View {
                 } catch {
                     presentingOfflineAlert = true
                 }
+                animatingOfflineBanner = false
             }
         } label: {
-            VStack {
-                HStack {
-                    Text("Offline mode is active")
-                        .font(.system(size: 16, weight: .bold))
+            ZStack(alignment: .center) {
+                VStack {
+                    HStack {
+                        Text("Offline mode is active")
+                            .font(.system(size: 16, weight: .bold))
+                    }
+                    Text("Tap to reconnect")
+                        .font(.system(size: 16))
+                        .multilineTextAlignment(.leading)
+                        .padding(.bottom, 2)
                 }
-                Text("Tap to reconnect")
-                    .font(.system(size: 16))
-                    .multilineTextAlignment(.leading)
-                    .padding(.bottom, 2)
+                .opacity(animatingOfflineBanner ? 0 : 1)
+                if animatingOfflineBanner {
+                    ProgressView()
+                }
             }
             .padding(.vertical)
             .padding(.horizontal, 24)
             .glassEffect(.clear.tint(.yellow.opacity(0.75)), in: Capsule())
             .padding(.bottom)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(BouncePressStyle())
     }
     
     private func reconnectedToast() -> some View {
@@ -230,8 +244,8 @@ struct BreedsView: View {
         .frame(height: AppConstants.View.scrollViewFooterHeight)
     }
     
-    private func textIsEmpty(_ text: String) -> Bool {
-        text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    private func textWasCleared(newValue: String, oldValue: String) -> Bool {
+        return newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !oldValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
 
@@ -249,4 +263,3 @@ struct BreedsView: View {
     )
     .modelContainer(container)
 }
-
