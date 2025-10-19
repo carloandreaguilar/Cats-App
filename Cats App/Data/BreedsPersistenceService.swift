@@ -22,14 +22,11 @@ class DefaultBreedsPersistenceService: BreedsPersistenceService {
     
     func fetchPersistedBreeds(query: String?, page: Int, pageSize: Int) throws -> [CatBreed] {
         var descriptor: FetchDescriptor<CatBreed>
-        if let query, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            let query = query.lowercased()
+        let query = query?.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if let query, !query.isEmpty {
             descriptor = FetchDescriptor<CatBreed>(
                 predicate: #Predicate { breed in
                     breed.name.localizedStandardContains(query)
-                    || (breed.origin?.localizedStandardContains(query) ?? false)
-                    || (breed.temperament?.localizedStandardContains(query) ?? false)
-                    || (breed.descriptionText?.localizedStandardContains(query) ?? false)
                 },
                 sortBy: [SortDescriptor(\.name)]
             )
