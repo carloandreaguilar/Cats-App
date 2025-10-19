@@ -18,6 +18,8 @@ struct BreedsView: View {
     @Binding private var navigationPath: NavigationPath
     @State private var presentingOfflineAlert = false
     @State private var showingReconnectedToast = false
+    @State private var showingNoConnectionBanner = false
+    @State private var showingOfflineModeBanner = false
     @State private var animatingOfflineBanner = false
     
     @State private var scrollViewId = UUID()
@@ -31,8 +33,6 @@ struct BreedsView: View {
     
     var body: some View {
             Group {
-                EmptyView()
-                    .id("top")
                 switch viewModel.viewState {
                 case .loadingFirstPage:
                     VStack {
@@ -41,55 +41,30 @@ struct BreedsView: View {
                         Spacer()
                     }
                 case .loadingMore, .loaded:
-                    ScrollView {
-                        if viewModel.breeds.isEmpty {
-                            ContentUnavailableView(
-                                "No results",
-                                systemImage: "cat.fill"
-                            )
-                            .foregroundStyle(Color.primary)
-                        } else {
-                           VStack(spacing: 0) {
-                                    BreedsGridView(viewModel.breeds, onTap: { breed in
-                                        navigationPath.append(BreedDestination.detail(breed: breed))
-                                    }, onFavouriteTap: { breed in
-                                        try? viewModel.toggleFavourite(for: breed)
-                                    }, onlastItemAppear: {
-                                        await viewModel.loadNextPageIfNeeded()
-                                    })
-                                    .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
-                                    footer()
-                                }
-                                .padding(.horizontal)
-                            
-                            
+                    if viewModel.breeds.isEmpty {
+                        ContentUnavailableView(
+                            "No results",
+                            systemImage: "cat.fill"
+                        )
+                        .foregroundStyle(Color.primary)
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                BreedsGridView(viewModel.breeds, onTap: { breed in
+                                    navigationPath.append(BreedDestination.detail(breed: breed))
+                                }, onFavouriteTap: { breed in
+                                    try? viewModel.toggleFavourite(for: breed)
+                                }, onlastItemAppear: {
+                                    await viewModel.loadNextPageIfNeeded()
+                                })
+                                .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
+                                footer()
+                            }
+                            .padding(.horizontal)
                         }
-                    }
-                    .id(scrollViewId)
-                }
-            }
-            .overlay(alignment: .bottom) {
-                Group {
-                    switch viewModel.viewState {
-                    case .loaded(let properties):
-                        if properties.dataSourceMode == .offline {
-                            offlineModeBanner()
-                        } else if !properties.hasConnection {
-                            noConnectionBanner()
-                        }
-                    default:
-                        EmptyView()
+                        .id(scrollViewId)
                     }
                 }
-                .animation(.default, value: viewModel.viewState)
-            }
-            .overlay(alignment: .bottom) {
-                Group {
-                    if showingReconnectedToast {
-                        reconnectedToast()
-                    }
-                }
-                .animation(.default, value: showingReconnectedToast)
             }
             .searchable(text: $viewModel.query)
             .onSubmit(of: .search) {
@@ -102,8 +77,14 @@ struct BreedsView: View {
                 }
             }
             .onChange(of: viewModel.viewState) { _, newValue in
-                if case .loaded(let properties) = newValue, properties.isReload {
-                    scrollViewId = UUID()
+                if case .loaded(let properties) = newValue {
+                    if properties.isReload {
+                        scrollViewId = UUID()
+                    }
+                    withAnimation {
+                        showingNoConnectionBanner = !properties.hasConnection && properties.dataSourceMode == .online
+                        showingOfflineModeBanner = properties.dataSourceMode == .offline
+                    }
                 }
             }
             .refreshable {
@@ -117,7 +98,7 @@ struct BreedsView: View {
                 do {
                     try await viewModel.attemptNetworkRefresh()
                     if wasOffline {
-                        showingReconnectedToast = true
+                        showReconnectedToast()
                     }
                 } catch {
                     if wasOffline {
@@ -136,6 +117,21 @@ struct BreedsView: View {
                     BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: .init(modelContext: modelContext)))
                 }
             })
+            .overlay(alignment: .bottom) {
+                if showingNoConnectionBanner {
+                    noConnectionBanner()
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if showingOfflineModeBanner {
+                    offlineModeBanner()
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if showingReconnectedToast {
+                    reconnectedToast()
+                }
+            }
             .alert(isPresented: $presentingOfflineAlert) {
                 Alert(
                     title: Text("Still offline"),
@@ -178,7 +174,7 @@ struct BreedsView: View {
             Task {
                 do {
                     try await viewModel.attemptNetworkRefresh()
-                    showingReconnectedToast = true
+                    showReconnectedToast()
                 } catch {
                     presentingOfflineAlert = true
                 }
@@ -220,9 +216,12 @@ struct BreedsView: View {
         .padding(.horizontal, 24)
         .glassEffect(.clear.tint(.green.opacity(0.75)), in: Capsule())
         .padding(.bottom)
-        .task {
-            try? await Task.sleep(for: .seconds(3))
-            showingReconnectedToast = false
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                withAnimation {
+                    showingReconnectedToast = false
+                }
+            }
         }
     }
     
@@ -242,6 +241,14 @@ struct BreedsView: View {
             Spacer()
         }
         .frame(height: AppConstants.View.scrollViewFooterHeight)
+    }
+    
+    private func showReconnectedToast() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation {
+                showingReconnectedToast = true
+            }
+        }
     }
     
     private func textWasCleared(newValue: String, oldValue: String) -> Bool {
