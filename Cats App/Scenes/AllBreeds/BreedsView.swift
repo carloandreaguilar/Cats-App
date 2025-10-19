@@ -1,5 +1,5 @@
 //
-//  AllBreedsView.swift
+//  BreedsView.swift
 //  Cats App
 //
 //  Created by Carlo André Aguilar on 16/10/25.
@@ -8,8 +8,8 @@
 import SwiftUI
 import SwiftData
 
-struct AllBreedsView: View {
-    static let defaultTitle = "All Breeds"
+struct BreedsView: View {
+    static let defaultTitle = "Cat breeds"
     
     @Environment(\.modelContext) var modelContext
     
@@ -169,7 +169,7 @@ struct AllBreedsView: View {
             }
             Spacer()
         }
-        .frame(height: 40)
+        .frame(height: AppConstants.View.scrollViewFooterHeight)
     }
     
     private func textIsEmpty(_ text: String) -> Bool {
@@ -181,8 +181,8 @@ struct AllBreedsView: View {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
 
-    AllBreedsView(
-        viewModel: AllBreedsView.DefaultViewModel(
+    BreedsView(
+        viewModel: BreedsView.DefaultViewModel(
             breedsDataSource: DefaultBreedsDataSource(
                 networkService: DefaultBreedsNetworkService(),
                 persistenceService: DefaultBreedsPersistenceService(modelContext: context)

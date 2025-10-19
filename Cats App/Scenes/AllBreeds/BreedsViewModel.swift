@@ -1,5 +1,5 @@
 //
-//  AllBreedsViewModel.swift
+//  BreedsViewModel.swift
 //  Cats App
 //
 //  Created by Carlo André Aguilar on 17/10/25.
@@ -7,7 +7,7 @@
 
 import Observation
 
-extension AllBreedsView {
+extension BreedsView {
     
     enum ViewState: Equatable {
         case loadingFirstPage,

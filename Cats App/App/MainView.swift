@@ -11,26 +11,26 @@ import SwiftData
 struct MainView: View {
     @Environment(\.modelContext) var modelContext
     @State private var selectedTab = 0
-    @State private var allBreedsNavigationPath = NavigationPath()
+    @State private var breedsNavigationPath = NavigationPath()
     @State private var favouriteBreedsNavigationPath = NavigationPath()
     private let hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            NavigationStack(path: $allBreedsNavigationPath) {
-                AllBreedsView(
+            NavigationStack(path: $breedsNavigationPath) {
+                BreedsView(
                     viewModel:
-                        AllBreedsView.DefaultViewModel(
+                        BreedsView.DefaultViewModel(
                         breedsDataSource: DefaultBreedsDataSource(
                             networkService: DefaultBreedsNetworkService(),
                             persistenceService: DefaultBreedsPersistenceService(modelContext: modelContext)
                         ), toggleFavouriteUseCase: .init(modelContext: modelContext)
-                    ), navigationPath: $allBreedsNavigationPath
+                    ), navigationPath: $breedsNavigationPath
                 )
-                .navigationTitle(AllBreedsView.defaultTitle)
+                .navigationTitle(BreedsView.defaultTitle)
             }
             .tabItem {
-                Label(AllBreedsView.defaultTitle, systemImage: "cat")
+                Label(BreedsView.defaultTitle, systemImage: "cat")
             }
             .tag(0)
 
