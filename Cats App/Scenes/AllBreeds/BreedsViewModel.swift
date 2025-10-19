@@ -12,7 +12,7 @@ extension BreedsView {
     enum ViewState: Equatable {
         case loadingFirstPage,
              loadingMore,
-             loaded(hasMore: Bool, hasConnection: Bool, dataSourceMode: DataSourceMode)
+             loaded(hasMore: Bool, hasConnection: Bool, mode: DataSourceMode)
     }
     
     protocol ViewModel {
@@ -22,7 +22,7 @@ extension BreedsView {
         func loadFirstPage() async throws
         func loadNextPageIfNeeded() async
         func activateOfflineMode() async throws
-        func attemptReconnect() async throws
+        func attemptNetworkRefresh() async throws
         func toggleFavourite(for breed: CatBreed) throws
     }
     
@@ -33,6 +33,7 @@ extension BreedsView {
         private let toggleFavouriteUseCase: ToggleFavouriteUseCase
         private(set) var viewState: ViewState = .loadingFirstPage
         private(set) var breeds: [CatBreed] = []
+        private var hasMore = true
         private var hasConnection = true
         private var currentDataMode: DataSourceMode = .online
         
@@ -44,19 +45,20 @@ extension BreedsView {
         func loadFirstPage() async throws {
             viewState = .loadingFirstPage
             do {
-                try await loadFirstPage(mode: .online)
-            } catch {
-                do {
+                switch currentDataMode {
+                case .online:
+                    try await loadFirstPage(mode: .online)
+                case .offline:
                     try await loadFirstPage(mode: .offline)
-                } catch {
-                    viewState = .loaded(hasMore: false, hasConnection: hasConnection, dataSourceMode: currentDataMode)
-                    throw error
                 }
+            } catch {
+                viewState = .loaded(hasMore: hasMore, hasConnection: hasConnection, mode: currentDataMode)
+                throw error
             }
         }
         
         func loadNextPageIfNeeded() async {
-            guard case .loaded(hasMore: true, hasConnection: _, dataSourceMode: _) = viewState else { return }
+            guard case .loaded(hasMore: true, hasConnection: _, mode: _) = viewState else { return }
             do {
                 viewState = .loadingMore
                 let page = try await breedsDataSource.loadNextPage()
@@ -64,7 +66,7 @@ extension BreedsView {
             } catch {
                 if error is NetworkError {
                     hasConnection = false
-                    viewState = .loaded(hasMore: true, hasConnection: hasConnection, dataSourceMode: currentDataMode)
+                    viewState = .loaded(hasMore: hasMore, hasConnection: hasConnection, mode: currentDataMode)
                 }
             }
         }
@@ -75,12 +77,13 @@ extension BreedsView {
             try await loadFirstPage(mode: .offline)
         }
         
-        func attemptReconnect() async throws {
-            guard currentDataMode == .offline else { return }
+        func attemptNetworkRefresh() async throws {
             do {
                 let page = try await breedsDataSource.loadInitialPage(query: query, mode: .online)
                 updateData(from: page)
             } catch {
+                hasConnection = false
+                viewState = .loaded(hasMore: true, hasConnection: false, mode: currentDataMode)
                 throw error
             }
         }
@@ -111,10 +114,12 @@ extension BreedsView {
                 if page.dataSourceMode == .online {
                     hasConnection = true
                 }
+                hasMore = page.hasMore
                 currentDataMode = page.dataSourceMode
-                viewState = .loaded(hasMore: page.hasMore, hasConnection: hasConnection, dataSourceMode: page.dataSourceMode)
+                viewState = .loaded(hasMore: page.hasMore, hasConnection: hasConnection, mode: page.dataSourceMode)
             } else {
-                viewState = .loaded(hasMore: false, hasConnection: hasConnection, dataSourceMode: currentDataMode)
+                hasMore = false
+                viewState = .loaded(hasMore: hasMore, hasConnection: hasConnection, mode: currentDataMode)
             }
         }
     }

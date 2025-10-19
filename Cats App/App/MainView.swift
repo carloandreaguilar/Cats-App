@@ -13,7 +13,7 @@ struct MainView: View {
     @State private var selectedTab = 0
     @State private var breedsNavigationPath = NavigationPath()
     @State private var favouriteBreedsNavigationPath = NavigationPath()
-    private let hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
+    private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
     
     var body: some View {
         TabView(selection: $selectedTab) {

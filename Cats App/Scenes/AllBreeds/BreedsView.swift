@@ -17,6 +17,9 @@ struct BreedsView: View {
     
     @Binding private var navigationPath: NavigationPath
     @State private var presentingOfflineAlert = false
+    @State private var showingReconnectedToast = false
+    
+    private let bannersHapticGenerator = UIImpactFeedbackGenerator(style: .soft)
     
     init(viewModel: ViewModel, navigationPath: Binding<NavigationPath>) {
         self.viewModel = viewModel
@@ -32,7 +35,7 @@ struct BreedsView: View {
                     ProgressView()
                     Spacer()
                 }
-            default:
+            case .loadingMore, .loaded:
                 Group {
                     if viewModel.breeds.isEmpty {
                         ContentUnavailableView(
@@ -57,19 +60,25 @@ struct BreedsView: View {
                         }
                     }
                 }
-                .overlay(alignment: .bottom) {
-                    switch viewModel.viewState {
-                    case .loaded(_, let hasConnection, let dataSourceMode):
-                        if dataSourceMode == .offline {
-                            offlineModeBanner()
-                        } else if !hasConnection {
-                            noConnectionBanner()
-                        }
-                    default:
-                        EmptyView()
+            }
+        }
+        .overlay(alignment: .bottom) {
+            Group {
+                switch viewModel.viewState {
+                case .loaded(_, let hasConnection, let dataSourceMode):
+                    if dataSourceMode == .offline {
+                        offlineModeBanner()
+                    } else if !hasConnection {
+                        noConnectionBanner()
+                    } else if showingReconnectedToast {
+                        reconnectedToast()
                     }
+                default:
+                    EmptyView()
                 }
             }
+            .animation(.default, value: viewModel.viewState)
+            .animation(.default, value: showingReconnectedToast)
         }
         .searchable(text: $viewModel.query)
         .onSubmit(of: .search) {
@@ -82,7 +91,23 @@ struct BreedsView: View {
             }
         }
         .refreshable {
-            try? await viewModel.loadFirstPage()
+            let wasOffline: Bool = {
+                if case .loaded(_, _, let mode) = viewModel.viewState {
+                    return mode == .offline
+                } else {
+                    return false
+                }
+            }()
+            do {
+                try await viewModel.attemptNetworkRefresh()
+                if wasOffline {
+                    showingReconnectedToast = true
+                }
+            } catch {
+                if wasOffline {
+                    presentingOfflineAlert = true
+                }
+            }
         }
         .task {
             if viewModel.breeds.isEmpty {
@@ -106,32 +131,37 @@ struct BreedsView: View {
     
     private func noConnectionBanner() -> some View {
         Button {
+            bannersHapticGenerator.prepare()
+            bannersHapticGenerator.impactOccurred()
             Task { try? await viewModel.activateOfflineMode() }
         } label: {
             VStack {
                 HStack {
                     Image(systemName: "wifi.slash")
                     Text("No connection")
-                        .font(.footnote.weight(.semibold))
+                        .font(.system(size: 16, weight: .bold))
                 }
-                Text("Tap to view offline data")
-                    .font(.footnote)
+                Text("Tap to view saved data")
+                    .font(.system(size: 16))
                     .multilineTextAlignment(.leading)
+                    .padding(.bottom, 2)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal)
-            .glassEffect(.regular, in: Capsule())
+            .padding(.vertical)
+            .padding(.horizontal, 24)
+            .glassEffect(.clear.tint(.red.opacity(0.75)), in: Capsule())
             .padding(.bottom)
-            .foregroundStyle(.red)
         }
         .buttonStyle(.plain)
     }
     
     private func offlineModeBanner() -> some View {
         Button {
+            bannersHapticGenerator.prepare()
+            bannersHapticGenerator.impactOccurred()
             Task {
                 do {
-                    try await viewModel.attemptReconnect()
+                    try await viewModel.attemptNetworkRefresh()
+                    showingReconnectedToast = true
                 } catch {
                     presentingOfflineAlert = true
                 }
@@ -139,19 +169,37 @@ struct BreedsView: View {
         } label: {
             VStack {
                 HStack {
-                    Text("Offline mode active")
-                        .font(.footnote.weight(.semibold))
+                    Text("Offline mode is active")
+                        .font(.system(size: 16, weight: .bold))
                 }
                 Text("Tap to reconnect")
-                    .font(.footnote)
+                    .font(.system(size: 16))
                     .multilineTextAlignment(.leading)
+                    .padding(.bottom, 2)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal)
-            .glassEffect(.regular, in: Capsule())
+            .padding(.vertical)
+            .padding(.horizontal, 24)
+            .glassEffect(.clear.tint(.yellow.opacity(0.75)), in: Capsule())
             .padding(.bottom)
         }
         .buttonStyle(.plain)
+    }
+    
+    private func reconnectedToast() -> some View {
+        VStack {
+            HStack {
+                Text("Back online!")
+                    .font(.system(size: 16, weight: .bold))
+            }
+        }
+        .padding(.vertical)
+        .padding(.horizontal, 24)
+        .glassEffect(.clear.tint(.green.opacity(0.75)), in: Capsule())
+        .padding(.bottom)
+        .task {
+            try? await Task.sleep(for: .seconds(3))
+            showingReconnectedToast = false
+        }
     }
     
     private func footer() -> some View {
