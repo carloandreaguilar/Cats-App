@@ -9,6 +9,7 @@ import Foundation
 
 protocol BreedsNetworkService {
     func fetchBreeds(page: Int, pageSize: Int) async throws -> [CatBreedDTO]
+    func searchBreeds(matching query: String, page: Int, pageSize: Int) async throws -> [CatBreedDTO]
 }
 
 class DefaultBreedsNetworkService: BreedsNetworkService {
@@ -20,9 +21,25 @@ class DefaultBreedsNetworkService: BreedsNetworkService {
         self.apiKey = apiKey
     }
     
-    func fetchBreeds(page: Int = 1, pageSize: Int) async throws -> [CatBreedDTO] {
+    func fetchBreeds(page: Int = 0, pageSize: Int) async throws -> [CatBreedDTO] {
         let path = "/breeds"
         let queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "limit", value: String(pageSize)),
+            URLQueryItem(name: "page", value: String(page))
+        ]
+        let url = try networkClient.makeURL(path: path, queryItems: queryItems)
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        setHeaders(on: &request)
+        
+        return try await networkClient.request(request)
+    }
+    
+    func searchBreeds(matching query: String, page: Int = 0, pageSize: Int) async throws -> [CatBreedDTO] {
+        let path = "/breeds/search"
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "q", value: query),
             URLQueryItem(name: "limit", value: String(pageSize)),
             URLQueryItem(name: "page", value: String(page))
         ]
@@ -39,3 +56,4 @@ class DefaultBreedsNetworkService: BreedsNetworkService {
         request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
     }
 }
+

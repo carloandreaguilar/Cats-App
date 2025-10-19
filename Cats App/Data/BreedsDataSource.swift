@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BreedsDataSource {
-    func loadInitialPage() async throws -> Page<CatBreed>?
+    func loadInitialPage(query: String?, mode: DataSourceMode) async throws -> Page<CatBreed>?
     func loadNextPage() async throws -> Page<CatBreed>?
 }
 
@@ -16,7 +16,9 @@ class DefaultBreedsDataSource: BreedsDataSource {
     private let networkService: BreedsNetworkService
     private let persistenceService: BreedsPersistenceService
     private let pageSize: Int
-    private var currentPage = 1
+    private var currentPage = 0
+    private var currentQuery: String?
+    private var currentMode: DataSourceMode = .online
     private var currentTask: Task<Page<CatBreed>?, Error>? = nil
     
     init(networkService: BreedsNetworkService, persistenceService: BreedsPersistenceService, pageSize: Int = AppConstants.defaultPageSize) {
@@ -25,22 +27,23 @@ class DefaultBreedsDataSource: BreedsDataSource {
         self.pageSize = pageSize
     }
     
-    func loadInitialPage() async throws -> Page<CatBreed>? {
-        currentPage = 1
-        do {
+    func loadInitialPage(query: String?, mode: DataSourceMode) async throws -> Page<CatBreed>? {
+        currentQuery = query
+        currentPage = 0
+        switch mode {
+        case .online:
             return try await loadPageFromNetwork(page: currentPage)
-        } catch {
-            if error is CancellationError { throw error }
+        case .offline:
             return try await loadPageFromPersistence(page: currentPage)
         }
     }
     
-    /// Assuming the order in which items are sorted (by name) is the same from both sources. If that ever changes this needs to be adjusted.
     func loadNextPage() async throws -> Page<CatBreed>? {
         let nextPage = currentPage + 1
-        do {
-            return try await self.loadPageFromNetwork(page: nextPage)
-        } catch {
+        switch currentMode {
+        case .online:
+            return try await loadPageFromNetwork(page: nextPage)
+        case .offline:
             return try await loadPageFromPersistence(page: nextPage)
         }
     }
@@ -50,19 +53,21 @@ class DefaultBreedsDataSource: BreedsDataSource {
         let newTask = Task<Page<CatBreed>?, Error> { [weak self] in
             guard let self else { throw NSError() }
             
-            let newBreedDtos = try await networkService.fetchBreeds(page: page, pageSize: pageSize)
+            var newBreedDtos = [CatBreedDTO]()
+            if let currentQuery, !currentQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                newBreedDtos = try await networkService.searchBreeds(matching: currentQuery, page: page, pageSize: pageSize)
+            } else {
+                newBreedDtos = try await networkService.fetchBreeds(page: page, pageSize: pageSize)
+            }
             
             guard !Task.isCancelled else {
                 throw CancellationError()
             }
             
-            guard !newBreedDtos.isEmpty else {
-                return nil
-            }
-            
             let newBreeds = try persistenceService.persist(newBreedDtos)
             
-            let newPage = Page(items: newBreeds, page: page, hasMore: newBreeds.count >= pageSize, dataSourceType: .online)
+            let newPage = Page(items: newBreeds, page: page, hasMore: newBreeds.count >= pageSize, dataSourceMode: .online)
+            currentMode = .online
             currentPage = page
             return newPage
         }
@@ -74,17 +79,14 @@ class DefaultBreedsDataSource: BreedsDataSource {
         currentTask?.cancel()
         let newTask = Task<Page<CatBreed>?, Error> { [weak self] in
             guard let self else { return nil }
-            let breeds = try persistenceService.fetchPersistedBreeds(page: page, pageSize: pageSize)
+            let breeds = try persistenceService.fetchPersistedBreeds(query: currentQuery, page: page, pageSize: pageSize)
             
             guard !Task.isCancelled else {
                 throw CancellationError()
             }
             
-            guard !breeds.isEmpty else {
-                return nil
-            }
-            
-            let newPage = Page(items: breeds, page: page, hasMore: breeds.count >= pageSize, dataSourceType: .offline)
+            let newPage = Page(items: breeds, page: page, hasMore: breeds.count >= pageSize, dataSourceMode: .offline)
+            currentMode = .offline
             currentPage = page
             return newPage
         }

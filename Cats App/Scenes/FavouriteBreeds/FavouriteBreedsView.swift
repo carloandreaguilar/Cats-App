@@ -29,17 +29,27 @@ struct FavouriteBreedsView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                averageLifeSpanView
-                BreedsGridView(favourites,
-                               onTap: { breed in
-                    navigationPath.append(BreedDestination.detail(breed: breed))
-                }, onFavouriteTap: { breed in
-                    try? viewModel.toggleFavourite(for: breed)
-                })
+        Group {
+            if favourites.isEmpty {
+                ContentUnavailableView(
+                    "None yet",
+                    systemImage: "heart"
+                )
+                .foregroundStyle(Color.primary)
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        averageLifeSpanView
+                        BreedsGridView(favourites,
+                                       onTap: { breed in
+                            navigationPath.append(BreedDestination.detail(breed: breed))
+                        }, onFavouriteTap: { breed in
+                            try? viewModel.toggleFavourite(for: breed)
+                        })
+                    }
+                    .padding(.horizontal)
+                }
             }
-            .padding(.horizontal)
         }
         .navigationDestination(for: BreedDestination.self, destination: { destination in
             switch destination {

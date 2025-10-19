@@ -22,7 +22,12 @@ struct BreedsGridView: View {
     private let onFavouriteTap: ((CatBreed) -> Void)
     private let onLastItemAppear: (() async -> Void)?
     
-    init(_ breeds: [CatBreed], onTap: @escaping ((CatBreed) -> Void), onFavouriteTap: @escaping ((CatBreed) -> Void), onlastItemAppear: (() async -> Void)? = nil) {
+    init(
+        _ breeds: [CatBreed],
+         onTap: @escaping ((CatBreed) -> Void),
+         onFavouriteTap: @escaping ((CatBreed) -> Void),
+         onlastItemAppear: (() async -> Void)? = nil
+    ) {
         self.breeds = breeds
         self.onTap = onTap
         self.onFavouriteTap = onFavouriteTap

@@ -10,14 +10,18 @@ import Observation
 extension AllBreedsView {
     
     enum ViewState: Equatable {
-        case loadingFirstPage, loadingMore, loaded(hasMore: Bool, dataSourceType: DataSourceType?), error
+        case loadingFirstPage,
+             loadingMore,
+             loaded(hasMore: Bool, hasConnection: Bool, dataSourceMode: DataSourceMode)
     }
     
     protocol ViewModel {
         var viewState: ViewState { get }
         var breeds: [CatBreed] { get }
-        func loadFirstPage() async
+        func loadFirstPage(query: String?) async throws
         func loadNextPageIfNeeded() async
+        func activateOfflineMode(query: String?) async throws
+        func attemptReconnect(query: String?) async throws
         func toggleFavourite(for breed: CatBreed) throws
     }
     
@@ -27,31 +31,48 @@ extension AllBreedsView {
         private let toggleFavouriteUseCase: ToggleFavouriteUseCase
         private(set) var viewState: ViewState = .loadingFirstPage
         private(set) var breeds: [CatBreed] = []
-        private var latestDataSourceType: DataSourceType?
+        private var hasConnection = true
+        private var currentDataMode: DataSourceMode = .online
         
         init(breedsDataSource: BreedsDataSource, toggleFavouriteUseCase: ToggleFavouriteUseCase) {
             self.breedsDataSource = breedsDataSource
             self.toggleFavouriteUseCase = toggleFavouriteUseCase
         }
         
-        func loadFirstPage() async {
+        func loadFirstPage(query: String?) async throws {
             do {
-                viewState = .loadingFirstPage
-                let page = try await breedsDataSource.loadInitialPage()
-                updateData(from: page)
+                try await loadFirstPage(query: query, mode: .online)
             } catch {
-                viewState = .error
+                try await loadFirstPage(query: query, mode: .offline)
             }
         }
         
         func loadNextPageIfNeeded() async {
-            guard case .loaded(hasMore: true, dataSourceType: _) = viewState else { return }
+            guard case .loaded(hasMore: true, hasConnection: _, dataSourceMode: _) = viewState else { return }
             do {
                 viewState = .loadingMore
                 let page = try await breedsDataSource.loadNextPage()
                 updateData(from: page)
             } catch {
-                viewState = .error
+                if error is NetworkError {
+                    hasConnection = false
+                    viewState = .loaded(hasMore: true, hasConnection: hasConnection, dataSourceMode: currentDataMode)
+                }
+            }
+        }
+        
+        func activateOfflineMode(query: String?) async throws {
+            currentDataMode = .offline
+            try await loadFirstPage(query: query, mode: .offline)
+        }
+        
+        func attemptReconnect(query: String?) async throws {
+            guard currentDataMode == .offline else { return }
+            do {
+                let page = try await breedsDataSource.loadInitialPage(query: query, mode: .online)
+                updateData(from: page)
+            } catch {
+                throw error
             }
         }
         
@@ -59,17 +80,33 @@ extension AllBreedsView {
             try toggleFavouriteUseCase.toggle(for: breed)
         }
         
+        private func loadFirstPage(query: String?, mode: DataSourceMode) async throws {
+            do {
+                viewState = .loadingFirstPage
+                let page = try await breedsDataSource.loadInitialPage(query: query, mode: mode)
+                updateData(from: page)
+            } catch {
+                if error is NetworkError {
+                    hasConnection = false
+                    viewState = .loaded(hasMore: true, hasConnection: hasConnection, dataSourceMode: currentDataMode)
+                }
+            }
+        }
+        
         private func updateData(from page: Page<CatBreed>?) {
             if let page = page {
-                if page.page == 1 {
+                if page.page == 0 {
                     breeds = page.items
                 } else {
                     breeds.append(contentsOf: page.items)
                 }
-                latestDataSourceType = page.dataSourceType
-                viewState = .loaded(hasMore: page.hasMore, dataSourceType: page.dataSourceType)
+                if page.dataSourceMode == .online {
+                    hasConnection = true
+                }
+                currentDataMode = page.dataSourceMode
+                viewState = .loaded(hasMore: page.hasMore, hasConnection: hasConnection, dataSourceMode: page.dataSourceMode)
             } else {
-                viewState = .loaded(hasMore: false, dataSourceType: latestDataSourceType)
+                viewState = .loaded(hasMore: false, hasConnection: hasConnection, dataSourceMode: currentDataMode)
             }
         }
     }

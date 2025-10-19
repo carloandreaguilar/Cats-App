@@ -24,6 +24,7 @@ extension FavouriteBreedsView {
         }
         
         func averageLifespan(for breeds: [CatBreed]) -> Double {
+            guard !breeds.isEmpty else { return 0 }
             let lifespans: [Double] = breeds.compactMap { breed in
                 guard let maxLifespan = breed.maxLifespan else { return nil }
                 return Double(maxLifespan)

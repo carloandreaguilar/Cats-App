@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 protocol BreedsPersistenceService {
-    func fetchPersistedBreeds(page: Int, pageSize: Int) throws -> [CatBreed]
+    func fetchPersistedBreeds(query: String?, page: Int, pageSize: Int) throws -> [CatBreed]
     func persist(_ breedDtos: [CatBreedDTO]) throws -> [CatBreed]
 }
 
@@ -20,11 +20,24 @@ class DefaultBreedsPersistenceService: BreedsPersistenceService {
         self.modelContext = modelContext
     }
     
-    func fetchPersistedBreeds(page: Int, pageSize: Int) throws -> [CatBreed] {
+    func fetchPersistedBreeds(query: String?, page: Int, pageSize: Int) throws -> [CatBreed] {
         var descriptor: FetchDescriptor<CatBreed>
-        descriptor = FetchDescriptor<CatBreed>(
-            sortBy: [SortDescriptor(\.name)]
-        )
+        if let query, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let query = query.lowercased()
+            descriptor = FetchDescriptor<CatBreed>(
+                predicate: #Predicate { breed in
+                    breed.name.localizedStandardContains(query)
+                    || (breed.origin?.localizedStandardContains(query) ?? false)
+                    || (breed.temperament?.localizedStandardContains(query) ?? false)
+                    || (breed.descriptionText?.localizedStandardContains(query) ?? false)
+                },
+                sortBy: [SortDescriptor(\.name)]
+            )
+        } else {
+            descriptor = FetchDescriptor<CatBreed>(
+                sortBy: [SortDescriptor(\.name)]
+            )
+        }
         descriptor.fetchLimit = pageSize
         descriptor.fetchOffset = max(page - 1, 0) * pageSize
         return try modelContext.fetch(descriptor)
@@ -40,7 +53,9 @@ class DefaultBreedsPersistenceService: BreedsPersistenceService {
                 existing.update(from: dto)
                 newBreeds.append(existing)
             } else {
-                newBreeds.append(CatBreed(dto))
+                let newBreed = CatBreed(dto)
+                modelContext.insert(newBreed)
+                newBreeds.append(newBreed)
             }
         }
         
@@ -49,7 +64,7 @@ class DefaultBreedsPersistenceService: BreedsPersistenceService {
         return newBreeds
     }
     
-    func fetchBreed(id: String) throws -> CatBreed? {
+    private func fetchBreed(id: String) throws -> CatBreed? {
         let descriptor = FetchDescriptor<CatBreed>(
             predicate: #Predicate { $0.id == id }
         )

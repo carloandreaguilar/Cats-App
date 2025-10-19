@@ -18,6 +18,7 @@ struct AllBreedsView: View {
     @Binding private var navigationPath: NavigationPath
     
     @State private var searchText = ""
+    @State private var presentingOfflineAlert = false
     
     init(viewModel: ViewModel, navigationPath: Binding<NavigationPath>) {
         self.viewModel = viewModel
@@ -33,7 +34,7 @@ struct AllBreedsView: View {
                     ProgressView()
                     Spacer()
                 }
-            case .loadingMore, .loaded:
+            default:
                 ScrollView {
                     VStack {
                         BreedsGridView(viewModel.breeds, onTap: { breed in
@@ -50,21 +51,35 @@ struct AllBreedsView: View {
                     .padding(.horizontal)
                 }
                 .overlay(alignment: .bottom) {
-                    if case .loaded(_, let dataSourceType) = viewModel.viewState, dataSourceType == .offline {
-                        offlineBanner()
+                    switch viewModel.viewState {
+                    case .loaded(_, let hasConnection, let dataSourceMode):
+                        if dataSourceMode == .offline {
+                            offlineModeBanner()
+                        } else if !hasConnection {
+                            noConnectionBanner()
+                        }
+                    default:
+                        EmptyView()
                     }
                 }
-            case .error:
-                EmptyView()
             }
         }
         .searchable(text: $searchText)
+        .onSubmit(of: .search) {
+            Task { try? await viewModel.loadFirstPage(query: searchText) }
+            
+        }
+        .onChange(of: searchText) { oldValue, newValue in
+            if !textIsEmpty(oldValue) && textIsEmpty(newValue) {
+                Task { try? await viewModel.loadFirstPage(query: searchText) }
+            }
+        }
         .refreshable {
-            await viewModel.loadFirstPage()
+            try? await viewModel.loadFirstPage(query: searchText)
         }
         .task {
             if viewModel.breeds.isEmpty {
-                await viewModel.loadFirstPage()
+                try? await viewModel.loadFirstPage(query: searchText)
             }
         }
         .navigationDestination(for: BreedDestination.self, destination: { destination in
@@ -73,26 +88,72 @@ struct AllBreedsView: View {
                 BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: .init(modelContext: modelContext)))
             }
         })
-    }
-    
-    private func offlineBanner() -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: "wifi.slash")
-            Text("Offline")
-                .font(.footnote.weight(.semibold))
+        .alert(isPresented: $presentingOfflineAlert) {
+            Alert(
+                title: Text("Still offline"),
+                message: Text("Check your connection and try again."),
+                dismissButton: .default(Text("OK"))
+            )
         }
-        .padding(12)
-        .glassEffect(.regular, in: Capsule())
-        .padding(.bottom, 12)
     }
     
-    func footer() -> some View {
+    private func noConnectionBanner() -> some View {
+        Button {
+            Task { try? await viewModel.activateOfflineMode(query: searchText) }
+        } label: {
+            VStack {
+                HStack {
+                    Image(systemName: "wifi.slash")
+                    Text("No connection")
+                        .font(.footnote.weight(.semibold))
+                }
+                Text("Tap to view offline data")
+                    .font(.footnote)
+                    .multilineTextAlignment(.leading)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal)
+            .glassEffect(.regular, in: Capsule())
+            .padding(.bottom)
+            .foregroundStyle(.red)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func offlineModeBanner() -> some View {
+        Button {
+            Task {
+                do {
+                    try await viewModel.attemptReconnect(query: searchText)
+                } catch {
+                    presentingOfflineAlert = true
+                }
+            }
+        } label: {
+            VStack {
+                HStack {
+                    Text("Offline mode active")
+                        .font(.footnote.weight(.semibold))
+                }
+                Text("Tap to reconnect")
+                    .font(.footnote)
+                    .multilineTextAlignment(.leading)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal)
+            .glassEffect(.regular, in: Capsule())
+            .padding(.bottom)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func footer() -> some View {
         HStack {
             Spacer()
             switch viewModel.viewState {
             case .loadingMore:
                 ProgressView()
-            case .loaded(let hasMore, _):
+            case .loaded(let hasMore, _, _):
                 if !hasMore {
                     Text(viewModel.breeds.isEmpty ? "No results" : "Showing all results")
                         .font(.footnote)
@@ -103,6 +164,10 @@ struct AllBreedsView: View {
             }
             Spacer()
         }
+    }
+    
+    private func textIsEmpty(_ text: String) -> Bool {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
 
@@ -120,3 +185,4 @@ struct AllBreedsView: View {
     )
     .modelContainer(container)
 }
+
