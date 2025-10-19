@@ -19,6 +19,8 @@ struct BreedsView: View {
     @State private var presentingOfflineAlert = false
     @State private var showingReconnectedToast = false
     
+    @State private var scrollViewId = UUID()
+    
     private let bannersHapticGenerator = UIImpactFeedbackGenerator(style: .soft)
     
     init(viewModel: ViewModel, navigationPath: Binding<NavigationPath>) {
@@ -27,106 +29,114 @@ struct BreedsView: View {
     }
     
     var body: some View {
-        Group {
-            switch viewModel.viewState {
-            case .loadingFirstPage:
-                VStack {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                }
-            case .loadingMore, .loaded:
-                Group {
-                    if viewModel.breeds.isEmpty {
-                        ContentUnavailableView(
-                            "No results",
-                            systemImage: "cat.fill"
-                        )
-                        .foregroundStyle(Color.primary)
-                    } else {
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                BreedsGridView(viewModel.breeds, onTap: { breed in
-                                    navigationPath.append(BreedDestination.detail(breed: breed))
-                                }, onFavouriteTap: { breed in
-                                    try? viewModel.toggleFavourite(for: breed)
-                                }, onlastItemAppear: {
-                                    await viewModel.loadNextPageIfNeeded()
-                                })
-                                .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
-                                footer()
-                            }
-                            .padding(.horizontal)
+            Group {
+                EmptyView()
+                    .id("top")
+                switch viewModel.viewState {
+                case .loadingFirstPage:
+                    VStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                case .loadingMore, .loaded:
+                    ScrollView {
+                        if viewModel.breeds.isEmpty {
+                            ContentUnavailableView(
+                                "No results",
+                                systemImage: "cat.fill"
+                            )
+                            .foregroundStyle(Color.primary)
+                        } else {
+                           VStack(spacing: 0) {
+                                    BreedsGridView(viewModel.breeds, onTap: { breed in
+                                        navigationPath.append(BreedDestination.detail(breed: breed))
+                                    }, onFavouriteTap: { breed in
+                                        try? viewModel.toggleFavourite(for: breed)
+                                    }, onlastItemAppear: {
+                                        await viewModel.loadNextPageIfNeeded()
+                                    })
+                                    .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
+                                    footer()
+                                }
+                                .padding(.horizontal)
+                            
+                            
                         }
                     }
+                    .id(scrollViewId)
                 }
             }
-        }
-        .overlay(alignment: .bottom) {
-            Group {
-                switch viewModel.viewState {
-                case .loaded(_, let hasConnection, let dataSourceMode):
-                    if dataSourceMode == .offline {
-                        offlineModeBanner()
-                    } else if !hasConnection {
-                        noConnectionBanner()
-                    } else if showingReconnectedToast {
-                        reconnectedToast()
+            .overlay(alignment: .bottom) {
+                Group {
+                    switch viewModel.viewState {
+                    case .loaded(let properties):
+                        if properties.dataSourceMode == .offline {
+                            offlineModeBanner()
+                        } else if !properties.hasConnection {
+                            noConnectionBanner()
+                        } else if showingReconnectedToast {
+                            reconnectedToast()
+                        }
+                    default:
+                        EmptyView()
                     }
-                default:
-                    EmptyView()
                 }
+                .animation(.default, value: viewModel.viewState)
+                .animation(.default, value: showingReconnectedToast)
             }
-            .animation(.default, value: viewModel.viewState)
-            .animation(.default, value: showingReconnectedToast)
-        }
-        .searchable(text: $viewModel.query)
-        .onSubmit(of: .search) {
-            Task { try? await viewModel.loadFirstPage() }
-            
-        }
-        .onChange(of: viewModel.query) { oldValue, newValue in
-            if !textIsEmpty(oldValue) && textIsEmpty(newValue) {
+            .searchable(text: $viewModel.query)
+            .onSubmit(of: .search) {
                 Task { try? await viewModel.loadFirstPage() }
+                
             }
-        }
-        .refreshable {
-            let wasOffline: Bool = {
-                if case .loaded(_, _, let mode) = viewModel.viewState {
-                    return mode == .offline
-                } else {
-                    return false
-                }
-            }()
-            do {
-                try await viewModel.attemptNetworkRefresh()
-                if wasOffline {
-                    showingReconnectedToast = true
-                }
-            } catch {
-                if wasOffline {
-                    presentingOfflineAlert = true
+            .onChange(of: viewModel.query) { oldValue, newValue in
+                if !textIsEmpty(oldValue) && textIsEmpty(newValue) {
+                    Task { try? await viewModel.loadFirstPage() }
                 }
             }
-        }
-        .task {
-            if viewModel.breeds.isEmpty {
-                try? await viewModel.loadFirstPage()
+            .onChange(of: viewModel.viewState) { _, newValue in
+                if case .loaded(let properties) = newValue, properties.isReload {
+                    scrollViewId = UUID()
+                }
             }
-        }
-        .navigationDestination(for: BreedDestination.self, destination: { destination in
-            switch destination {
-            case .detail(let breed):
-                BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: .init(modelContext: modelContext)))
+            .refreshable {
+                let wasOffline: Bool = {
+                    if case .loaded(let properties) = viewModel.viewState {
+                        return properties.dataSourceMode == .offline
+                    } else {
+                        return false
+                    }
+                }()
+                do {
+                    try await viewModel.attemptNetworkRefresh()
+                    if wasOffline {
+                        showingReconnectedToast = true
+                    }
+                } catch {
+                    if wasOffline {
+                        presentingOfflineAlert = true
+                    }
+                }
             }
-        })
-        .alert(isPresented: $presentingOfflineAlert) {
-            Alert(
-                title: Text("Still offline"),
-                message: Text("Check your connection and try again."),
-                dismissButton: .default(Text("OK"))
-            )
-        }
+            .task {
+                if viewModel.breeds.isEmpty {
+                    try? await viewModel.loadFirstPage()
+                }
+            }
+            .navigationDestination(for: BreedDestination.self, destination: { destination in
+                switch destination {
+                case .detail(let breed):
+                    BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: .init(modelContext: modelContext)))
+                }
+            })
+            .alert(isPresented: $presentingOfflineAlert) {
+                Alert(
+                    title: Text("Still offline"),
+                    message: Text("Check your connection and try again."),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
     }
     
     private func noConnectionBanner() -> some View {

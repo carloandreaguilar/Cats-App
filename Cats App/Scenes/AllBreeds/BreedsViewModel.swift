@@ -9,12 +9,6 @@ import Observation
 
 extension BreedsView {
     
-    enum ViewState: Equatable {
-        case loadingFirstPage,
-             loadingMore,
-             loaded(hasMore: Bool, hasConnection: Bool, mode: DataSourceMode)
-    }
-    
     protocol ViewModel {
         var query: String { get set }
         var viewState: ViewState { get }
@@ -52,13 +46,13 @@ extension BreedsView {
                     try await loadFirstPage(mode: .offline)
                 }
             } catch {
-                viewState = .loaded(hasMore: hasMore, hasConnection: hasConnection, mode: currentDataMode)
+                viewState = .loaded(properties: .init(hasMore: hasMore, hasConnection: hasConnection, dataSourceMode: currentDataMode))
                 throw error
             }
         }
         
         func loadNextPageIfNeeded() async {
-            guard case .loaded(hasMore: true, hasConnection: _, mode: _) = viewState else { return }
+            guard case .loaded(let properties) = viewState, properties.hasMore else { return }
             do {
                 viewState = .loadingMore
                 let page = try await breedsDataSource.loadNextPage()
@@ -66,7 +60,7 @@ extension BreedsView {
             } catch {
                 if error is NetworkError {
                     hasConnection = false
-                    viewState = .loaded(hasMore: hasMore, hasConnection: hasConnection, mode: currentDataMode)
+                    viewState = .loaded(properties: .init(hasMore: hasMore, hasConnection: hasConnection, dataSourceMode: currentDataMode))
                 }
             }
         }
@@ -83,7 +77,7 @@ extension BreedsView {
                 updateData(from: page)
             } catch {
                 hasConnection = false
-                viewState = .loaded(hasMore: true, hasConnection: false, mode: currentDataMode)
+                viewState = .loaded(properties: .init(hasMore: true, hasConnection: false, dataSourceMode: currentDataMode))
                 throw error
             }
         }
@@ -116,11 +110,32 @@ extension BreedsView {
                 }
                 hasMore = page.hasMore
                 currentDataMode = page.dataSourceMode
-                viewState = .loaded(hasMore: page.hasMore, hasConnection: hasConnection, mode: page.dataSourceMode)
+                viewState = .loaded(properties: .init(isReload: page.page == 0, hasMore: page.hasMore, hasConnection: hasConnection, dataSourceMode: page.dataSourceMode))
             } else {
                 hasMore = false
-                viewState = .loaded(hasMore: hasMore, hasConnection: hasConnection, mode: currentDataMode)
+                viewState = .loaded(properties: .init(hasMore: hasMore, hasConnection: hasConnection, dataSourceMode: currentDataMode))
             }
+        }
+    }
+}
+
+extension BreedsView {
+    enum ViewState: Equatable {
+        case loadingFirstPage,
+             loadingMore,
+             loaded(properties: Properties)
+        
+        struct Properties: Equatable {
+            init(isReload: Bool = false, hasMore: Bool, hasConnection: Bool, dataSourceMode: DataSourceMode) {
+                self.isReload = isReload
+                self.hasMore = hasMore
+                self.hasConnection = hasConnection
+                self.dataSourceMode = dataSourceMode
+            }
+            let isReload: Bool
+            let hasMore: Bool
+            let hasConnection: Bool
+            let dataSourceMode: DataSourceMode
         }
     }
 }

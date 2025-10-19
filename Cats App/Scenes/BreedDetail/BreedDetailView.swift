@@ -48,7 +48,7 @@ struct BreedDetailView: View {
                         Text("Lifespan".uppercased())
                             .foregroundStyle(.secondary)
                             .font(.system(size: 12, weight: .bold))
-                        Text("\(lifespan) years")
+                        Text("Up to \(lifespan) years")
                             .multilineTextAlignment(.leading)
                     }
                 }
