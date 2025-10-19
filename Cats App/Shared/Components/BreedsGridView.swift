@@ -17,6 +17,7 @@ struct BreedsGridView: View {
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]
+    private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
     
     private let onTap: ((CatBreed) -> Void)
     private let onFavouriteTap: ((CatBreed) -> Void)
@@ -62,6 +63,8 @@ struct BreedsGridView: View {
                 .font(.system(size: 18))
                 .foregroundStyle(Color.primary)
             Button {
+                hapticGenerator.prepare()
+                hapticGenerator.impactOccurred()
                 onFavouriteTap(breed)
             } label: {
                 Image(systemName: (breed.isFavourited ?? false) ? "heart.fill" : "heart")

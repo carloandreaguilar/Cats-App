@@ -33,20 +33,29 @@ struct AllBreedsView: View {
                     Spacer()
                 }
             default:
-                ScrollView {
-                    VStack {
-                        BreedsGridView(viewModel.breeds, onTap: { breed in
-                            navigationPath.append(BreedDestination.detail(breed: breed))
-                        }, onFavouriteTap: { breed in
-                            try? viewModel.toggleFavourite(for: breed)
-                        }, onlastItemAppear: {
-                            await viewModel.loadNextPageIfNeeded()
-                        })
-                        .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
-                        footer()
-                            .padding(.vertical)
+                Group {
+                    if viewModel.breeds.isEmpty {
+                        ContentUnavailableView(
+                            "No results",
+                            systemImage: "cat.fill"
+                        )
+                        .foregroundStyle(Color.primary)
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                BreedsGridView(viewModel.breeds, onTap: { breed in
+                                    navigationPath.append(BreedDestination.detail(breed: breed))
+                                }, onFavouriteTap: { breed in
+                                    try? viewModel.toggleFavourite(for: breed)
+                                }, onlastItemAppear: {
+                                    await viewModel.loadNextPageIfNeeded()
+                                })
+                                .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
+                                footer()
+                            }
+                            .padding(.horizontal)
+                        }
                     }
-                    .padding(.horizontal)
                 }
                 .overlay(alignment: .bottom) {
                     switch viewModel.viewState {
@@ -146,22 +155,21 @@ struct AllBreedsView: View {
     }
     
     private func footer() -> some View {
-        HStack {
+        VStack {
             Spacer()
-            switch viewModel.viewState {
-            case .loadingMore:
-                ProgressView()
-            case .loaded(let hasMore, _, _):
-                if !hasMore {
-                    Text(viewModel.breeds.isEmpty ? "No results" : "Showing all results")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+            HStack {
+                Spacer()
+                switch viewModel.viewState {
+                case .loadingMore:
+                    ProgressView()
+                default:
+                    EmptyView()
                 }
-            default:
-                EmptyView()
+                Spacer()
             }
             Spacer()
         }
+        .frame(height: 40)
     }
     
     private func textIsEmpty(_ text: String) -> Bool {

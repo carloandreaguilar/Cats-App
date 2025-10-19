@@ -32,8 +32,8 @@ struct FavouriteBreedsView: View {
         Group {
             if favourites.isEmpty {
                 ContentUnavailableView(
-                    "None yet",
-                    systemImage: "heart"
+                    "No favourites",
+                    systemImage: "heart.fill"
                 )
                 .foregroundStyle(Color.primary)
             } else {
@@ -48,6 +48,7 @@ struct FavouriteBreedsView: View {
                         })
                     }
                     .padding(.horizontal)
+                    .padding(.bottom, 40)
                 }
             }
         }

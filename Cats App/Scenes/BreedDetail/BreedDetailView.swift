@@ -12,6 +12,7 @@ import CachedAsyncImage
 struct BreedDetailView: View {
     
     private let imageCornerRadius: CGFloat = 12
+    private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
     @State private var viewModel: ViewModel
     
     init(viewModel: ViewModel) {
@@ -42,6 +43,16 @@ struct BreedDetailView: View {
                     }
                 }
                 
+                if let lifespan = viewModel.breed.maxLifespan {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Lifespan".uppercased())
+                            .foregroundStyle(.secondary)
+                            .font(.system(size: 12, weight: .bold))
+                        Text("\(lifespan) years")
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+                
                 if let origin = viewModel.breed.origin {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Origin".uppercased())
@@ -60,6 +71,8 @@ struct BreedDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
+                    hapticGenerator.prepare()
+                    hapticGenerator.impactOccurred()
                     try? viewModel.toggleFavourite()
                 } label: {
                     Image(systemName: (viewModel.breed.isFavourited ?? false) ? "heart.fill" : "heart")
