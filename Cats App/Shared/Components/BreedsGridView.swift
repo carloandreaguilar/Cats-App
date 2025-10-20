@@ -113,12 +113,14 @@ struct BreedsGridView: View {
                 }
                 
             } else {
-                emptyImageBackground
-                    .overlay {
-                        Text("No image")
-                            .foregroundStyle(.secondary)
-                    }
-                
+                Image(AppConstants.Asset.defaultCatImage)
+                    .resizable()
+                    .scaledToFit()
+                    .overlay(
+                        /// Thin border around image, to make image shape visible when image background matches the app background.
+                        RoundedRectangle(cornerRadius: imageCornerRadius)
+                            .stroke(Color.secondary, lineWidth: 0.5)
+                    )
             }
         }
         .aspectRatio(1, contentMode: .fit)

@@ -203,6 +203,7 @@ struct BreedsView: View {
             .padding(.bottom)
         }
         .buttonStyle(BouncePressStyle())
+        .disabled(animatingOfflineBanner)
     }
     
     private func reconnectedToast() -> some View {
@@ -240,7 +241,7 @@ struct BreedsView: View {
             }
             Spacer()
         }
-        .frame(height: AppConstants.View.scrollViewFooterHeight)
+        .frame(height: AppConstants.ViewLayout.scrollViewBottomPadding)
     }
     
     private func showReconnectedToast() {

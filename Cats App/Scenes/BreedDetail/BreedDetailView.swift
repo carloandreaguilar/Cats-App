@@ -64,7 +64,7 @@ struct BreedDetailView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.bottom)
+            .padding(.bottom, AppConstants.ViewLayout.scrollViewBottomPadding)
         }
         .navigationTitle(viewModel.breed.name)
         .navigationBarTitleDisplayMode(.inline)
@@ -116,13 +116,14 @@ struct BreedDetailView: View {
                     }
                 }
             } else {
-                emptyImageBackground
-                    .aspectRatio(1.0, contentMode: .fit)
-                    .overlay {
-                        Text("No image")
-                            .foregroundStyle(.secondary)
-                    }
-                
+                Image(AppConstants.Asset.defaultCatImage)
+                    .resizable()
+                    .scaledToFit()
+                    .overlay(
+                        /// Thin border around image, to make image shape visible when image background matches the app background.
+                        RoundedRectangle(cornerRadius: imageCornerRadius)
+                            .stroke(Color.secondary, lineWidth: 0.5)
+                    )
             }
         }
         .clipped()

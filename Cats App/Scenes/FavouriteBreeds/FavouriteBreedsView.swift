@@ -48,7 +48,7 @@ struct FavouriteBreedsView: View {
                         })
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, AppConstants.View.scrollViewFooterHeight)
+                    .padding(.bottom, AppConstants.ViewLayout.scrollViewBottomPadding)
                 }
             }
         }
