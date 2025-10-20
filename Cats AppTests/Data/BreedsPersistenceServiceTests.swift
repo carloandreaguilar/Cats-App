@@ -1,5 +1,5 @@
 //
-//  DefaultBreedsPersistenceServiceTests.swift
+//  BreedsPersistenceServiceTests.swift
 //  Cats AppTests
 //
 //  Created by Carlo André Aguilar on 20/10/25.
@@ -11,8 +11,8 @@ import SwiftData
 @testable import Cats_App
 
 @MainActor
-@Suite("DefaultBreedsPersistenceServiceTests")
-struct DefaultBreedsPersistenceServiceTests {
+@Suite("BreedsPersistenceService")
+struct BreedsPersistenceServiceTests {
     var context: ModelContext!
     var sut: DefaultBreedsPersistenceService!
 

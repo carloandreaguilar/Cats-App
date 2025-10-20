@@ -1,5 +1,5 @@
 //
-//  DefaultBreedsDataSourceTests.swift
+//  BreedsDataSourceTests.swift
 //  Cats App
 //
 //  Created by Carlo André Aguilar on 20/10/25.
@@ -9,8 +9,8 @@ import Testing
 @testable import Cats_App
 
 @MainActor
-@Suite("DefaultBreedsDataSourceTests")
-struct DefaultBreedsDataSourceTests {
+@Suite("BreedsDataSource")
+struct BreedsDataSourceTests {
     var network: MockNetworkService!
     var persistence: MockPersistenceService!
     var sut: DefaultBreedsDataSource!
@@ -110,7 +110,7 @@ struct DefaultBreedsDataSourceTests {
     }
 }
 
-extension DefaultBreedsDataSourceTests {
+extension BreedsDataSourceTests {
     
     final class MockNetworkService: BreedsNetworkService {
         var searchBreedsCalled = false
@@ -149,11 +149,5 @@ extension DefaultBreedsDataSourceTests {
             stored.append(contentsOf: breeds)
             return breeds
         }
-    }
-}
-
-private extension Array {
-    subscript(safe index: Int) -> Element? {
-        indices.contains(index) ? self[index] : nil
     }
 }

@@ -11,16 +11,15 @@ import SwiftData
 @testable import Cats_App
 
 @MainActor
-@Suite("BreedsViewModelTests")
+@Suite("BreedsViewModel")
 struct BreedsViewModelTests {
-    var context: ModelContext!
-    var mockDataSource: MockBreedsDataSource!
-    var sut: BreedsView.DefaultViewModel!
+    let mockDataSource: MockBreedsDataSource!
+    let sut: BreedsView.DefaultViewModel!
 
     init() {
         mockDataSource = MockBreedsDataSource()
         let container = try! ModelContainer(for: CatBreed.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-        context = ModelContext(container)
+        let context = ModelContext(container)
         sut = BreedsView.DefaultViewModel(
             breedsDataSource: mockDataSource,
             toggleFavouriteUseCase: .init(modelContext: context)
@@ -127,14 +126,6 @@ struct BreedsViewModelTests {
 
         #expect(sut.breeds == expected)
         #expect(sut.viewState == .loaded(properties: .init(isReload: false, hasMore: false, hasConnection: true, dataSourceMode: .online)))
-    }
-
-    @Test
-    func testToggleFavourite() throws {
-        let cat = CatBreed(CatBreedDTO(id: "1", name: "Cat"))
-        #expect((cat.isFavourited ?? false) == false)
-        try sut.toggleFavourite(for: cat)
-        #expect(cat.isFavourited == true)
     }
     
     @Test

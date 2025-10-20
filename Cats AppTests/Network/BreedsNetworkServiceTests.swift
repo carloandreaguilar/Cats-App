@@ -1,5 +1,5 @@
 //
-//  DefaultBreedsNetworkServiceTests.swift
+//  BreedsNetworkServiceTests.swift
 //  Cats App
 //
 //  Created by Carlo André Aguilar on 20/10/25.
@@ -9,8 +9,8 @@ import Foundation
 import Testing
 @testable import Cats_App
 
-@Suite("DefaultBreedsNetworkService")
-struct DefaultBreedsNetworkServiceTests {
+@Suite("BreedsNetworkService")
+struct BreedsNetworkServiceTests {
     
     let apiKey = "test-api-key"
     let baseURL = URL(string: "https://thecatapi.com")!
@@ -30,11 +30,12 @@ struct DefaultBreedsNetworkServiceTests {
             #expect(comps.path == "/breeds")
             let items = Dictionary(uniqueKeysWithValues: (comps.queryItems ?? []).map { ($0.name, $0.value ?? "") })
             #expect(items["limit"] == "20")
-            #expect(items["page"] == "2")
+            /// API is zero indexed.
+            #expect(items["page"] == "0")
 
             return expected
         }
-        let result: [CatBreedDTO] = try await sut.fetchBreeds(page: 2, pageSize: 20)
+        let result: [CatBreedDTO] = try await sut.fetchBreeds(page: 1, pageSize: 20)
         #expect(result == expected)
     }
    
@@ -92,7 +93,7 @@ struct DefaultBreedsNetworkServiceTests {
     }
 }
 
-extension DefaultBreedsNetworkServiceTests {
+extension BreedsNetworkServiceTests {
     
     enum DummyError: Error, Equatable { case network }
     

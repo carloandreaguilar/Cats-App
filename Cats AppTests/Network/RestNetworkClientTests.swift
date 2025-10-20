@@ -1,5 +1,5 @@
 //
-//  DefaultRestNetworkClientTests.swift
+//  RestNetworkClientTests.swift
 //  Cats AppTests
 //
 //  Created by Carlo André Aguilar on 20/10/25.
@@ -9,8 +9,8 @@ import Foundation
 import Testing
 @testable import Cats_App
 
-@Suite("DefaultRestNetworkClient")
-struct DefaultRestNetworkClientTests {
+@Suite("RestNetworkClient")
+struct RestNetworkClientTests {
     
     let baseUrl = "https://thecatapi.com/v1"
     
@@ -204,7 +204,7 @@ struct DefaultRestNetworkClientTests {
     }
 }
 
-extension DefaultRestNetworkClientTests {
+extension RestNetworkClientTests {
     final class MockURLProtocol: URLProtocol {
         static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
