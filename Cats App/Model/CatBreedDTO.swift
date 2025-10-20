@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CatBreedDTO: Decodable {
+struct CatBreedDTO: Decodable, Equatable {
     let id: String
     let name: String
     let origin: String?

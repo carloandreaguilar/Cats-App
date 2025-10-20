@@ -16,7 +16,7 @@ class DefaultBreedsNetworkService: BreedsNetworkService {
     private let networkClient: RestNetworkClient
     private let apiKey: String
     
-    init(restNetworkClient: RestNetworkClient = DefaultRestNetworkClient(), apiKey: String = AppConstants.defaultApiKey) {
+    init(restNetworkClient: RestNetworkClient = DefaultRestNetworkClient(baseURL: AppConstants.defaultBaseURL), apiKey: String = AppConstants.defaultApiKey) {
         self.networkClient = restNetworkClient
         self.apiKey = apiKey
     }

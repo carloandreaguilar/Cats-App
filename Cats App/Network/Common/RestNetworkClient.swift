@@ -18,7 +18,7 @@ struct DefaultRestNetworkClient: RestNetworkClient {
     let baseURL: URL
     let decoder: JSONDecoder
     
-    init(session: URLSession = .shared, baseURL: URL = AppConstants.defaultBaseURL, decoder: JSONDecoder = JSONDecoder()) {
+    init(session: URLSession = .shared, baseURL: URL, decoder: JSONDecoder = JSONDecoder()) {
         self.session = session
         self.baseURL = baseURL
         self.decoder = decoder
