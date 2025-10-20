@@ -24,7 +24,7 @@ struct MainView: View {
                         breedsDataSource: DefaultBreedsDataSource(
                             networkService: DefaultBreedsNetworkService(),
                             persistenceService: DefaultBreedsPersistenceService(modelContext: modelContext)
-                        ), toggleFavouriteUseCase: .init(modelContext: modelContext)
+                        ), toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)
                     ), navigationPath: $breedsNavigationPath
                 )
                 .navigationTitle(BreedsView.defaultTitle)
@@ -38,7 +38,7 @@ struct MainView: View {
                 FavouriteBreedsView(
                     viewModel:
                         FavouriteBreedsView.DefaultViewModel(
-                        toggleFavouriteUseCase: .init(modelContext: modelContext)),
+                        toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)),
                     navigationPath: $favouriteBreedsNavigationPath
                 )
                 .navigationTitle(FavouriteBreedsView.defaultTitle)

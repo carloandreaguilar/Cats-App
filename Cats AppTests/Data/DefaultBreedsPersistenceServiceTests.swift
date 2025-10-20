@@ -11,13 +11,13 @@ import SwiftData
 @testable import Cats_App
 
 @MainActor
+@Suite("DefaultBreedsPersistenceServiceTests")
 struct DefaultBreedsPersistenceServiceTests {
-    var container: ModelContainer!
     var context: ModelContext!
     var sut: DefaultBreedsPersistenceService!
 
     init() throws {
-        container = try ModelContainer(for: CatBreed.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let container = try ModelContainer(for: CatBreed.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         context = ModelContext(container)
         sut = DefaultBreedsPersistenceService(modelContext: context)
     }

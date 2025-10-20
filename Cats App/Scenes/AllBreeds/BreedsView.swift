@@ -114,7 +114,7 @@ struct BreedsView: View {
             .navigationDestination(for: BreedDestination.self, destination: { destination in
                 switch destination {
                 case .detail(let breed):
-                    BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: .init(modelContext: modelContext)))
+                    BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)))
                 }
             })
             .overlay(alignment: .bottom) {
@@ -266,7 +266,7 @@ struct BreedsView: View {
             breedsDataSource: DefaultBreedsDataSource(
                 networkService: DefaultBreedsNetworkService(),
                 persistenceService: DefaultBreedsPersistenceService(modelContext: context)
-            ), toggleFavouriteUseCase: .init(modelContext: context)
+            ), toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: context)
         ), navigationPath: .constant(NavigationPath())
     )
     .modelContainer(container)

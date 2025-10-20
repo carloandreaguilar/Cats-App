@@ -140,6 +140,6 @@ struct BreedDetailView: View {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
     
-    BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: .example, toggleFavouriteUseCase: .init(modelContext: context)))
+    BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: .example, toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: context)))
 }
 

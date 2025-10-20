@@ -115,7 +115,7 @@ struct DefaultRestNetworkClientTests {
 
         MockURLProtocol.requestHandler = { request in
             #expect(request.url == url)
-            let response = HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!
+            let response = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
             return (response, Data())
         }
 
@@ -127,7 +127,7 @@ struct DefaultRestNetworkClientTests {
             Issue.record("Expected to throw, but succeeded")
         } catch let error as NetworkError {
             if case .server(let statusCode, _) = error {
-                #expect(statusCode == 404)
+                #expect(statusCode == 500)
             } else {
                 Issue.record("Expected NetworkError.server, got: \(error)")
             }

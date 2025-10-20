@@ -9,6 +9,7 @@ import Testing
 @testable import Cats_App
 
 @MainActor
+@Suite("DefaultBreedsDataSourceTests")
 struct DefaultBreedsDataSourceTests {
     var network: MockNetworkService!
     var persistence: MockPersistenceService!

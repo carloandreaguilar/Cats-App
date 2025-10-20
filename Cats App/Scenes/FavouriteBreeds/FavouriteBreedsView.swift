@@ -55,7 +55,7 @@ struct FavouriteBreedsView: View {
         .navigationDestination(for: BreedDestination.self, destination: { destination in
             switch destination {
             case .detail(let breed):
-                BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: .init(modelContext: modelContext)))
+                BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)))
             }
         })
     }
@@ -79,5 +79,5 @@ struct FavouriteBreedsView: View {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
     
-    FavouriteBreedsView(viewModel: FavouriteBreedsView.DefaultViewModel( toggleFavouriteUseCase: .init(modelContext: context)), navigationPath: .constant(NavigationPath()))
+    FavouriteBreedsView(viewModel: FavouriteBreedsView.DefaultViewModel( toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: context)), navigationPath: .constant(NavigationPath()))
 }
