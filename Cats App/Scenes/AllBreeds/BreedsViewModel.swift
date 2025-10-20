@@ -99,7 +99,7 @@ extension BreedsView {
         
         private func updateData(from page: Page<CatBreed>?) {
             if let page = page {
-                if page.page == 0 {
+                if page.page == 1 {
                     breeds = page.items
                 } else {
                     breeds.append(contentsOf: page.items)
@@ -109,7 +109,7 @@ extension BreedsView {
                 }
                 hasMore = page.hasMore
                 currentDataMode = page.dataSourceMode
-                viewState = .loaded(properties: .init(isReload: page.page == 0, hasMore: page.hasMore, hasConnection: hasConnection, dataSourceMode: page.dataSourceMode))
+                viewState = .loaded(properties: .init(isReload: page.page == 1, hasMore: page.hasMore, hasConnection: hasConnection, dataSourceMode: page.dataSourceMode))
             } else {
                 hasMore = false
                 viewState = .loaded(properties: .init(hasMore: hasMore, hasConnection: hasConnection, dataSourceMode: currentDataMode))

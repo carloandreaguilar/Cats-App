@@ -21,7 +21,9 @@ class DefaultBreedsNetworkService: BreedsNetworkService {
         self.apiKey = apiKey
     }
     
-    func fetchBreeds(page: Int = 0, pageSize: Int) async throws -> [CatBreedDTO] {
+    func fetchBreeds(page: Int = 1, pageSize: Int) async throws -> [CatBreedDTO] {
+        /// API paging is 0 indexed
+        let page = max(page - 1, 0)
         let path = "/breeds"
         let queryItems: [URLQueryItem] = [
             URLQueryItem(name: "limit", value: String(pageSize)),
@@ -35,7 +37,9 @@ class DefaultBreedsNetworkService: BreedsNetworkService {
         return try await networkClient.request(request)
     }
     
-    func searchBreeds(matching query: String, page: Int = 0, pageSize: Int) async throws -> [CatBreedDTO] {
+    func searchBreeds(matching query: String, page: Int = 1, pageSize: Int) async throws -> [CatBreedDTO] {
+        /// API paging is 0 indexed
+        let page = max(page - 1, 0)
         let path = "/breeds/search"
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let queryItems: [URLQueryItem] = [

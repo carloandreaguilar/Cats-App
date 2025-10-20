@@ -16,7 +16,7 @@ class DefaultBreedsDataSource: BreedsDataSource {
     private let networkService: BreedsNetworkService
     private let persistenceService: BreedsPersistenceService
     private let pageSize: Int
-    private var currentPage = 0
+    private var currentPage = 1
     private var currentQuery: String?
     private var currentMode: DataSourceMode = .online
     private var currentTask: Task<Page<CatBreed>?, Error>? = nil
@@ -29,7 +29,7 @@ class DefaultBreedsDataSource: BreedsDataSource {
     
     func loadInitialPage(query: String?, mode: DataSourceMode) async throws -> Page<CatBreed>? {
         currentQuery = query
-        currentPage = 0
+        currentPage = 1
         switch mode {
         case .online:
             return try await loadPageFromNetwork(page: currentPage)
