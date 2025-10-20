@@ -5,13 +5,13 @@
 //  Created by Carlo André Aguilar on 17/10/25.
 //
 
-
+import Foundation
 import Observation
 
 extension FavouriteBreedsView {
     
     protocol ViewModel {
-        func averageLifespan(for breeds: [CatBreed]) -> Double
+        func formattedAverageLifespan(for breeds: [CatBreed]) -> String?
         func toggleFavourite(for breed: CatBreed) throws
     }
     
@@ -23,15 +23,22 @@ extension FavouriteBreedsView {
             self.toggleFavouriteUseCase = toggleFavouriteUseCase
         }
         
-        func averageLifespan(for breeds: [CatBreed]) -> Double {
-            guard !breeds.isEmpty else { return 0 }
+        func formattedAverageLifespan(for breeds: [CatBreed]) -> String? {
             let lifespans: [Double] = breeds.compactMap { breed in
-                guard let maxLifespan = breed.maxLifespan else { return nil }
-                return Double(maxLifespan)
+                guard let lifespan = breed.maxLifespan else { return nil }
+                return Double(lifespan)
             }
-           
-            let total = lifespans.reduce(0, +)
-            return total / Double(lifespans.count)
+            guard !lifespans.isEmpty else { return nil }
+
+            let average = lifespans.reduce(0, +) / Double(lifespans.count)
+
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 1
+            formatter.minimumFractionDigits = 0
+            formatter.locale = .current
+
+            return formatter.string(from: NSNumber(value: average))
         }
         
         func toggleFavourite(for breed: CatBreed) throws {

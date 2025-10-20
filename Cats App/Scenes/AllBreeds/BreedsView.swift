@@ -35,34 +35,12 @@ struct BreedsView: View {
             Group {
                 switch viewModel.viewState {
                 case .loadingFirstPage:
-                    VStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
+                    emptyLoadingView()
                 case .loadingMore, .loaded:
                     if viewModel.breeds.isEmpty {
-                        ContentUnavailableView(
-                            "No results",
-                            systemImage: "cat.fill"
-                        )
-                        .foregroundStyle(Color.primary)
+                        contentUnavailableView()
                     } else {
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                BreedsGridView(viewModel.breeds, onTap: { breed in
-                                    navigationPath.append(BreedDestination.detail(breed: breed))
-                                }, onFavouriteTap: { breed in
-                                    try? viewModel.toggleFavourite(for: breed)
-                                }, onlastItemAppear: {
-                                    await viewModel.loadNextPageIfNeeded()
-                                })
-                                .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
-                                footer()
-                            }
-                            .padding(.horizontal)
-                        }
-                        .id(scrollViewId)
+                        breedsScrollableGrid()
                     }
                 }
             }
@@ -139,6 +117,40 @@ struct BreedsView: View {
                     dismissButton: .default(Text("OK"))
                 )
             }
+    }
+    
+    private func breedsScrollableGrid() -> some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                BreedsGridView(viewModel.breeds, onTap: { breed in
+                    navigationPath.append(BreedDestination.detail(breed: breed))
+                }, onFavouriteTap: { breed in
+                    try? viewModel.toggleFavourite(for: breed)
+                }, onlastItemAppear: {
+                    await viewModel.loadNextPageIfNeeded()
+                })
+                .animation({ if case .loaded = viewModel.viewState { return .default } else { return nil } }(), value: viewModel.viewState)
+                footer()
+            }
+            .padding(.horizontal)
+        }
+        .id(scrollViewId)
+    }
+    
+    private func contentUnavailableView() -> some View {
+        ContentUnavailableView(
+            "No results",
+            systemImage: "cat.fill"
+        )
+        .foregroundStyle(Color.primary)
+    }
+    
+    private func emptyLoadingView() -> some View {
+        VStack {
+            Spacer()
+            ProgressView()
+            Spacer()
+        }
     }
     
     private func noConnectionBanner() -> some View {
@@ -245,7 +257,7 @@ struct BreedsView: View {
     }
     
     private func showReconnectedToast() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation {
                 showingReconnectedToast = true
             }

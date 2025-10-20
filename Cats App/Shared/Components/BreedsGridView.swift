@@ -88,7 +88,7 @@ struct BreedsGridView: View {
                 CachedAsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:
-                        emptyImageBackground
+                        emptyImageBackground()
                     case .success(let image):
                         GeometryReader { geometryReader in
                             image
@@ -102,13 +102,13 @@ struct BreedsGridView: View {
                                 )
                         }
                     case .failure:
-                        emptyImageBackground
+                        emptyImageBackground()
                             .overlay {
                                 Image(systemName: "exclamationmark.triangle.fill")
                                     .foregroundStyle(.secondary)
                             }
                     default:
-                        emptyImageBackground
+                        emptyImageBackground()
                     }
                 }
                 
@@ -128,7 +128,7 @@ struct BreedsGridView: View {
         .cornerRadius(imageCornerRadius)
     }
     
-    var emptyImageBackground: some View {
+    func emptyImageBackground() -> some View {
         Rectangle()
             .fill(Color.gray.opacity(0.5))
     }

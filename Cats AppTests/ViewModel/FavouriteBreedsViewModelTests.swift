@@ -6,6 +6,7 @@
 //
 
 import Testing
+import Foundation
 import Observation
 import SwiftData
 @testable import Cats_App
@@ -13,8 +14,8 @@ import SwiftData
 @MainActor
 @Suite("FavouriteBreedsViewModel")
 struct FavouriteBreedsViewModelTests {
-    
     let sut: FavouriteBreedsView.DefaultViewModel
+    let localSeparator = Locale.current.decimalSeparator ?? ","
     
     init() {
         let container = try! ModelContainer(for: CatBreed.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
@@ -29,8 +30,8 @@ struct FavouriteBreedsViewModelTests {
             CatBreed(id: "B", name: "BreedB", maxLifespan: 10),
             CatBreed(id: "C", name: "BreedC", maxLifespan: 5)
         ]
-        let average = sut.averageLifespan(for: breeds)
-        #expect(average == 10.0)
+        let average = sut.formattedAverageLifespan(for: breeds)
+        #expect(average == "10")
     }
     
     @Test
@@ -41,13 +42,13 @@ struct FavouriteBreedsViewModelTests {
             CatBreed(id: "C", name: "BreedC", maxLifespan: 5)
         ]
         
-        let average = sut.averageLifespan(for: breeds)
-        #expect(average == 8.5)
+        let average = sut.formattedAverageLifespan(for: breeds)
+        #expect(average == "8\(localSeparator)5")
     }
     
     @Test
     func testAverageLifespanWithEmptyArray() {
-        let average = sut.averageLifespan(for: [])
-        #expect(average == 0)
+        let average = sut.formattedAverageLifespan(for: [])
+        #expect(average == nil)
     }
 }

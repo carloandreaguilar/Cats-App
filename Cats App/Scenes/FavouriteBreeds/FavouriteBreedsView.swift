@@ -31,25 +31,9 @@ struct FavouriteBreedsView: View {
     var body: some View {
         Group {
             if favourites.isEmpty {
-                ContentUnavailableView(
-                    "No favourites",
-                    systemImage: "heart.fill"
-                )
-                .foregroundStyle(Color.primary)
+                contentUnavailableView()
             } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        averageLifeSpanView
-                        BreedsGridView(favourites,
-                                       onTap: { breed in
-                            navigationPath.append(BreedDestination.detail(breed: breed))
-                        }, onFavouriteTap: { breed in
-                            try? viewModel.toggleFavourite(for: breed)
-                        })
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, AppConstants.ViewLayout.scrollViewBottomPadding)
-                }
+                favouritesScrollableGrid()
             }
         }
         .navigationDestination(for: BreedDestination.self, destination: { destination in
@@ -60,17 +44,43 @@ struct FavouriteBreedsView: View {
         })
     }
     
-    var averageLifeSpanView: some View {
-        let value = viewModel.averageLifespan(for: favourites)
-        let formatted = String(format: "%.1f", value)
-        let trimmed = formatted.hasSuffix(".0") ? String(formatted.dropLast(2)) : formatted
-        return VStack(alignment: .leading, spacing: 4) {
-            Text("Average lifespan".uppercased())
-                .foregroundStyle(.secondary)
-                .font(.system(size: 12, weight: .bold))
-            Text("\(trimmed) years")
-                .foregroundStyle(.primary)
-                .font(.system(size: 18, weight: .bold))
+    func favouritesScrollableGrid() -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                averageLifeSpanView()
+                BreedsGridView(favourites,
+                               onTap: { breed in
+                    navigationPath.append(BreedDestination.detail(breed: breed))
+                }, onFavouriteTap: { breed in
+                    try? viewModel.toggleFavourite(for: breed)
+                })
+            }
+            .padding(.horizontal)
+            .padding(.bottom, AppConstants.ViewLayout.scrollViewBottomPadding)
+        }
+    }
+    
+    func contentUnavailableView() -> some View {
+        ContentUnavailableView(
+            "No favourites",
+            systemImage: "heart.fill"
+        )
+        .foregroundStyle(Color.primary)
+    }
+    
+    @ViewBuilder
+    func averageLifeSpanView() -> some View {
+        if let lifespan = viewModel.formattedAverageLifespan(for: favourites) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Average lifespan".uppercased())
+                    .foregroundStyle(.secondary)
+                    .font(.system(size: 12, weight: .bold))
+                Text("\(lifespan) years")
+                    .foregroundStyle(.primary)
+                    .font(.system(size: 18, weight: .bold))
+            }
+        } else {
+            EmptyView()
         }
     }
 }

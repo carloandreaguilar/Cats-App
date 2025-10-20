@@ -22,45 +22,22 @@ struct BreedDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                image
+                image()
+                
                 if let descriptionText = viewModel.breed.descriptionText {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("About".uppercased())
-                            .foregroundStyle(.secondary)
-                            .font(.system(size: 12, weight: .bold))
-                        Text(descriptionText)
-                            .multilineTextAlignment(.leading)
-                    }
+                    section(title: "About", body: descriptionText)
                 }
                 
                 if let temperament = viewModel.breed.temperament {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Temperament".uppercased())
-                            .foregroundStyle(.secondary)
-                            .font(.system(size: 12, weight: .bold))
-                        Text(temperament)
-                            .multilineTextAlignment(.leading)
-                    }
+                    section(title: "Temperament", body: temperament)
                 }
                 
                 if let lifespan = viewModel.breed.maxLifespan {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Lifespan".uppercased())
-                            .foregroundStyle(.secondary)
-                            .font(.system(size: 12, weight: .bold))
-                        Text("Up to \(lifespan) years")
-                            .multilineTextAlignment(.leading)
-                    }
+                    section(title: "Lifespan", body: "Up to \(lifespan) years")
                 }
                 
                 if let origin = viewModel.breed.origin {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Origin".uppercased())
-                            .foregroundStyle(.secondary)
-                            .font(.system(size: 12, weight: .bold))
-                        Text(origin)
-                            .multilineTextAlignment(.leading)
-                    }
+                    section(title: "Origin", body: origin)
                 }
             }
             .padding(.horizontal)
@@ -70,25 +47,39 @@ struct BreedDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    hapticGenerator.prepare()
-                    hapticGenerator.impactOccurred()
-                    try? viewModel.toggleFavourite()
-                } label: {
-                    Image(systemName: (viewModel.breed.isFavourited ?? false) ? "heart.fill" : "heart")
-                        .foregroundStyle(Color.primary)
-                }
+                favouriteButton()
             }
         }
     }
     
-    var image: some View {
+    func section(title: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title.uppercased())
+                .foregroundStyle(.secondary)
+                .font(.system(size: 12, weight: .bold))
+            Text(body)
+                .multilineTextAlignment(.leading)
+        }
+    }
+    
+    func favouriteButton() -> some View {
+        Button {
+            hapticGenerator.prepare()
+            hapticGenerator.impactOccurred()
+            try? viewModel.toggleFavourite()
+        } label: {
+            Image(systemName: (viewModel.breed.isFavourited ?? false) ? "heart.fill" : "heart")
+                .foregroundStyle(Color.primary)
+        }
+    }
+    
+    func image() -> some View {
         Group {
             if let url = viewModel.breed.imageURL {
                 CachedAsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:
-                        emptyImageBackground
+                        emptyImageBackground()
                             .aspectRatio(1.0, contentMode: .fit)
                             .overlay {
                                 ProgressView()
@@ -104,14 +95,14 @@ struct BreedDetailView: View {
                                     .stroke(Color.secondary, lineWidth: 0.5)
                             )
                     case .failure:
-                        emptyImageBackground
+                        emptyImageBackground()
                             .aspectRatio(1.0, contentMode: .fit)
                             .overlay {
                                 Image(systemName: "exclamationmark.triangle.fill")
                                     .foregroundStyle(.secondary)
                             }
                     default:
-                        emptyImageBackground
+                        emptyImageBackground()
                             .aspectRatio(1.0, contentMode: .fit)
                     }
                 }
@@ -130,7 +121,7 @@ struct BreedDetailView: View {
         .cornerRadius(imageCornerRadius)
     }
     
-    var emptyImageBackground: some View {
+    func emptyImageBackground() -> some View {
         Rectangle()
             .fill(Color.gray.opacity(0.5))
     }
