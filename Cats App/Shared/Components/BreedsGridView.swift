@@ -64,6 +64,7 @@ struct BreedsGridView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .font(.system(size: 18))
                 .foregroundStyle(Color.primary)
+            /// Did not follow the wireframe here because placing the favourite button on the corner of the image can cover cats faces. So i placed it below the image.
             Button {
                 hapticGenerator.prepare()
                 hapticGenerator.impactOccurred()
