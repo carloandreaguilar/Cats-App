@@ -42,48 +42,52 @@ class DefaultBreedsPersistenceService: BreedsPersistenceService {
     
     func persist(_ breedDtos: [CatBreedDTO]) throws -> [CatBreed] {
         guard !breedDtos.isEmpty else { return [] }
-        try self.pruneOldPersistence(olderThanDays: 3)
+        try pruneOldPersistence(olderThanDays: 30)
+
+        let breedDtoIds = breedDtos.map(\.id)
+        let descriptor = FetchDescriptor<CatBreed>(
+            predicate: #Predicate { breedDtoIds.contains($0.id) }
+        )
+        let existingBreeds = try modelContext.fetch(descriptor)
+        let breedById = Dictionary(uniqueKeysWithValues: existingBreeds.map { ($0.id, $0) })
+
+        var persistedBreeds = [CatBreed]()
         
-        var newBreeds = [CatBreed]()
         for dto in breedDtos {
-            if let existing = try fetchBreed(id: dto.id) {
+            if let existing = breedById[dto.id] {
                 existing.update(from: dto)
-                newBreeds.append(existing)
+                persistedBreeds.append(existing)
             } else {
                 let newBreed = CatBreed(dto)
                 modelContext.insert(newBreed)
-                newBreeds.append(newBreed)
+                persistedBreeds.append(newBreed)
             }
         }
-        
+
         try modelContext.save()
-        
-        return newBreeds
-    }
-    
-    private func fetchBreed(id: String) throws -> CatBreed? {
-        let descriptor = FetchDescriptor<CatBreed>(
-            predicate: #Predicate { $0.id == id }
-        )
-        let results = try modelContext.fetch(descriptor)
-        return results.first
+        return persistedBreeds
     }
     
     private func pruneOldPersistence(olderThanDays: Int) throws {
         guard let cutoff = Calendar.current.date(byAdding: .day, value: -olderThanDays, to: .now) else { return }
         let cutoffDate = cutoff
-        let descriptor = FetchDescriptor<CatBreed>(
-            predicate: #Predicate { breed in
-                if let persistedAt = breed.persistedAt {
-                    return persistedAt < cutoffDate
-                } else {
-                    return true
+        let batchSize = 1000
+        var itemsToDelete = [CatBreed]()
+        repeat {
+            var descriptor = FetchDescriptor<CatBreed>(
+                predicate: #Predicate { breed in
+                    if let persistedAt = breed.persistedAt {
+                        return persistedAt < cutoffDate
+                    } else {
+                        return true
+                    }
                 }
-            }
-        )
-        let old = try modelContext.fetch(descriptor)
-        for item in old { modelContext.delete(item) }
-        try modelContext.save()
+            )
+            descriptor.fetchLimit = batchSize
+            itemsToDelete = try modelContext.fetch(descriptor)
+            if itemsToDelete.isEmpty { break }
+            for item in itemsToDelete { modelContext.delete(item) }
+            try modelContext.save()
+        } while !itemsToDelete.isEmpty
     }
 }
-
