@@ -176,6 +176,7 @@ struct BreedsView: View {
             .padding(.bottom)
         }
         .buttonStyle(BouncePressStyle())
+        .accessibilityIdentifier("noConnectionBanner")
     }
     
     private func offlineModeBanner() -> some View {
@@ -216,6 +217,7 @@ struct BreedsView: View {
         }
         .buttonStyle(BouncePressStyle())
         .disabled(animatingOfflineBanner)
+        .accessibilityIdentifier("offlineModeBanner")
     }
     
     private func reconnectedToast() -> some View {
@@ -236,6 +238,7 @@ struct BreedsView: View {
                 }
             }
         }
+        .accessibilityIdentifier("reconnectedToast")
     }
     
     private func footer() -> some View {

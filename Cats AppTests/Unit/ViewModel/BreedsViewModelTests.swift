@@ -175,39 +175,3 @@ struct BreedsViewModelTests {
         }
     }
 }
-
-extension BreedsViewModelTests {
-    final class MockBreedsDataSource: BreedsDataSource {
-        var pageToReturn: Page<CatBreed>?
-        var pageQueue: [Page<CatBreed>] = []
-        var shouldThrowNetworkError = false
-        var shouldDelay = false
-        private(set) var loadNextPageCallCount = 0
-
-        func loadInitialPage(query: String?, mode: DataSourceMode) async throws -> Page<CatBreed>? {
-            if shouldThrowNetworkError { throw NetworkError.server(statusCode: 500, message: "") }
-            if shouldDelay {
-                try? await Task.sleep(for: .seconds(0.5))
-            }
-            if !pageQueue.isEmpty {
-                return pageQueue.removeFirst()
-            } else {
-                return pageToReturn
-            }
-        }
-
-        func loadNextPage() async throws -> Page<CatBreed>? {
-            if shouldThrowNetworkError { throw NetworkError.server(statusCode: 500, message: "") }
-            loadNextPageCallCount += 1
-            if shouldDelay {
-                try? await Task.sleep(for: .seconds(0.5))
-            }
-            if !pageQueue.isEmpty {
-                return pageQueue.removeFirst()
-            } else {
-                return pageToReturn
-            }
-        }
-    }
-}
-

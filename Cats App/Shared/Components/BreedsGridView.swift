@@ -13,7 +13,9 @@ struct BreedsGridView: View {
     private let breeds: [CatBreed]
     private let imageCornerRadius: CGFloat = 12
     private let favouriteButtonSize: CGFloat = 20
+    
     private let gridColumns = [
+        /// Set to only two columns instead of three like the wireframe, because it seems a worse experience with three (pictures are too small to easily discern and text space is quite constrained and harder to read)
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]

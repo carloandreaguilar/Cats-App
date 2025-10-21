@@ -25,6 +25,10 @@ struct DefaultRestNetworkClient: RestNetworkClient {
     }
     
     func request<T: Decodable>(_ request: URLRequest) async throws -> T {
+        #if DEBUG
+        try simulateOfflineIfNeeded()
+        #endif
+        
         do {
             try Task.checkCancellation()
             let (data, response) = try await session.data(for: request)
@@ -45,15 +49,23 @@ struct DefaultRestNetworkClient: RestNetworkClient {
     }
     
     func makeURL(path: String, queryItems: [URLQueryItem]) throws -> URL {
-            var components = URLComponents()
-            components.scheme = baseURL.scheme
-            components.host = baseURL.host
-            components.path = baseURL.path + path
-            components.queryItems = queryItems.isEmpty ? nil : queryItems
-
-            guard let url = components.url else {
-                throw NetworkError.network(underlying: URLError(.badURL))
-            }
-            return url
+        var components = URLComponents()
+        components.scheme = baseURL.scheme
+        components.host = baseURL.host
+        components.path = baseURL.path + path
+        components.queryItems = queryItems.isEmpty ? nil : queryItems
+        
+        guard let url = components.url else {
+            throw NetworkError.network(underlying: URLError(.badURL))
         }
+        return url
+    }
+}
+
+extension DefaultRestNetworkClient {
+    private func simulateOfflineIfNeeded() throws {
+        if CommandLine.arguments.contains("--simulateOffline") {
+            throw NetworkError.network(underlying: URLError(.notConnectedToInternet))
+        }
+    }
 }

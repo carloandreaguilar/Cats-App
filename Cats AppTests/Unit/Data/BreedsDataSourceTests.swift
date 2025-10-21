@@ -11,16 +11,16 @@ import Testing
 @MainActor
 @Suite("BreedsDataSource")
 struct BreedsDataSourceTests {
-    var network: MockNetworkService!
-    var persistence: MockPersistenceService!
+    var network: MockBreedsNetworkService!
+    var persistence: MockBreedsPersistenceService!
     var sut: DefaultBreedsDataSource!
-
+    
     init() {
-        network = MockNetworkService()
-        persistence = MockPersistenceService()
+        network = MockBreedsNetworkService()
+        persistence = MockBreedsPersistenceService()
         sut = DefaultBreedsDataSource(networkService: network, persistenceService: persistence, pageSize: 3)
     }
-
+    
     @Test
     func testLoadInitialPageOnlineFetchesFromNetworkAndPersists() async throws {
         let dtos = [
@@ -37,7 +37,7 @@ struct BreedsDataSourceTests {
         #expect(page?.items.map(\.name) == ["Siamese", "Persian"])
         #expect(page?.dataSourceMode == .online)
     }
-
+    
     @Test
     func testNextNextPageUsesCurrentMode() async throws {
         network.allBreeds = [
@@ -74,7 +74,7 @@ struct BreedsDataSourceTests {
         #expect(network.fetchBreedsCalled)
         #expect(firstPage?.page == 1)
         #expect(firstPage?.items.last?.name == "Aegan")
-
+        
         let nextPage = try await sut.loadNextPage()
         #expect(nextPage?.page == 2)
         #expect(nextPage?.items.last?.name == "Persian")
@@ -102,52 +102,10 @@ struct BreedsDataSourceTests {
         #expect(firstOnlinePage?.page == 1)
         #expect(firstOnlinePage?.items.last?.name == "Aegan")
         #expect(firstOnlinePage?.dataSourceMode == .online)
-
+        
         let firstOfflinePage = try await sut.loadInitialPage(query: nil, mode: .offline)
         #expect(firstOfflinePage?.page == 1)
         #expect(firstOfflinePage?.items.last?.name == "Chausie")
         #expect(firstOfflinePage?.dataSourceMode == .offline)
-    }
-}
-
-extension BreedsDataSourceTests {
-    
-    final class MockNetworkService: BreedsNetworkService {
-        var searchBreedsCalled = false
-        var fetchBreedsCalled = false
-        var allBreeds: [CatBreedDTO] = []
-
-        func fetchBreeds(page: Int, pageSize: Int) async throws -> [CatBreedDTO] {
-            fetchBreedsCalled = true
-            let start = max((page - 1) * pageSize, 0)
-            let end = min(start + pageSize, allBreeds.count)
-            return Array(allBreeds[start..<end])
-        }
-
-        func searchBreeds(matching query: String, page: Int, pageSize: Int) async throws -> [CatBreedDTO] {
-            searchBreedsCalled = true
-            let start = max((page - 1) * pageSize, 0)
-            let end = min(start + pageSize, allBreeds.count)
-            return Array(allBreeds[start..<end])
-        }
-    }
-
-    final class MockPersistenceService: BreedsPersistenceService {
-        var stored: [CatBreed] = []
-        var persistedDtos: [CatBreedDTO] = []
-        var allBreeds: [CatBreed] = []
-        
-        func fetchPersistedBreeds(query: String?, page: Int, pageSize: Int) throws -> [CatBreed] {
-            let start = max((page - 1) * pageSize, 0)
-            let end = min(start + pageSize, allBreeds.count)
-            return Array(allBreeds[start..<end])
-        }
-        
-        func persist(_ breedDtos: [CatBreedDTO]) throws -> [CatBreed] {
-            persistedDtos = breedDtos
-            let breeds = breedDtos.map { CatBreed($0) }
-            stored.append(contentsOf: breeds)
-            return breeds
-        }
     }
 }
