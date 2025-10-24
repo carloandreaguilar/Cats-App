@@ -176,6 +176,7 @@ struct BreedsView: View {
             .padding(.bottom)
         }
         .buttonStyle(BouncePressStyle())
+        .fixedSize()
         .accessibilityIdentifier("noConnectionBanner")
     }
     
@@ -217,6 +218,7 @@ struct BreedsView: View {
         }
         .buttonStyle(BouncePressStyle())
         .disabled(animatingOfflineBanner)
+        .fixedSize()
         .accessibilityIdentifier("offlineModeBanner")
     }
     
@@ -238,6 +240,7 @@ struct BreedsView: View {
                 }
             }
         }
+        .fixedSize()
         .accessibilityIdentifier("reconnectedToast")
     }
     
