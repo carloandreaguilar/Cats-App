@@ -8,7 +8,7 @@
 import XCTest
 
 final class Cats_AppUITests: XCTestCase {
-
+    
     @MainActor
     func testEnteringOfflineMode() throws {
         let app = XCUIApplication()

@@ -14,7 +14,7 @@ import SwiftData
 @MainActor
 @Suite("FavouriteBreedsViewModel")
 struct FavouriteBreedsViewModelTests {
-    let sut: FavouriteBreedsView.DefaultViewModel
+    let sut: DefaultFavouritesViewModel
     let localSeparator = Locale.current.decimalSeparator ?? ","
     
     init() {

@@ -9,6 +9,11 @@ import SwiftUI
 import SwiftData
 
 struct MainView: View {
+    private let appDependencies: AppDependencies
+    
+    init(appDependencies: AppDependencies) {
+        self.appDependencies = appDependencies
+    }
     @Environment(\.modelContext) var modelContext
     @State private var selectedTab = 0
     @State private var breedsNavigationPath = NavigationPath()
@@ -20,12 +25,8 @@ struct MainView: View {
             NavigationStack(path: $breedsNavigationPath) {
                 BreedsView(
                     viewModel:
-                        BreedsView.DefaultViewModel(
-                        breedsDataSource: DefaultBreedsDataSource(
-                            networkService: DefaultBreedsNetworkService(),
-                            persistenceService: DefaultBreedsPersistenceService(modelContext: modelContext)
-                        ), toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)
-                    ), navigationPath: $breedsNavigationPath
+                        appDependencies.breedsViewModel,
+                    navigationPath: $breedsNavigationPath
                 )
                 .navigationTitle(BreedsView.defaultTitle)
             }
@@ -37,8 +38,7 @@ struct MainView: View {
             NavigationStack(path: $favouriteBreedsNavigationPath) {
                 FavouriteBreedsView(
                     viewModel:
-                        FavouriteBreedsView.DefaultViewModel(
-                        toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)),
+                        appDependencies.favouritesViewModel,
                     navigationPath: $favouriteBreedsNavigationPath
                 )
                 .navigationTitle(FavouriteBreedsView.defaultTitle)
@@ -56,6 +56,6 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+    MainView(appDependencies: .production)
         .modelContainer(for: CatBreed.self, inMemory: true)
 }
