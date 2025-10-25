@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import CachedAsyncImage
 
 struct BreedDetailView: View {
     
@@ -76,7 +75,7 @@ struct BreedDetailView: View {
     func image() -> some View {
         Group {
             if let url = viewModel.breed.imageURL {
-                CachedAsyncImage(url: url) { phase in
+                AsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:
                         emptyImageBackground()

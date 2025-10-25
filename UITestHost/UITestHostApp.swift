@@ -34,13 +34,23 @@ extension AppDependencies {
         let favouritesViewModel = DefaultFavouritesViewModel(
         toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext))
         
-        return .init(breedsViewModel: breedsViewModel, favouritesViewModel: favouritesViewModel, modelContainer: sharedModelContainer)
+        // Increased capacity for image caching
+        let urlCache = URLCache(
+            memoryCapacity: 50 * 1024 * 1024, // 50mb
+            diskCapacity: 500 * 1024 * 1024 // 500mb
+        )
+        
+        return .init(breedsViewModel: breedsViewModel, favouritesViewModel: favouritesViewModel, modelContainer: sharedModelContainer, urlCache: urlCache)
     }
 }
 
 @main
 struct UITestHostApp: App {
     private let dependencies = AppDependencies.uiTesting
+    
+    init() {
+        URLCache.shared = dependencies.urlCache
+    }
 
     var body: some Scene {
         WindowGroup {

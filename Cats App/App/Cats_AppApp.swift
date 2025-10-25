@@ -11,6 +11,10 @@ import SwiftData
 @main
 struct Cats_AppApp: App {
     private let dependencies: AppDependencies = .production
+    
+    init() {
+        URLCache.shared = dependencies.urlCache
+    }
 
     var body: some Scene {
         WindowGroup {

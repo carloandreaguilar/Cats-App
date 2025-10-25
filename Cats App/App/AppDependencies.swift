@@ -12,12 +12,7 @@ struct AppDependencies {
     let breedsViewModel: BreedsViewModel
     let favouritesViewModel: FavouritesViewModel
     let modelContainer: ModelContainer
-    
-    init(breedsViewModel: BreedsViewModel, favouritesViewModel: FavouritesViewModel, modelContainer: ModelContainer) {
-        self.breedsViewModel = breedsViewModel
-        self.favouritesViewModel = favouritesViewModel
-        self.modelContainer = modelContainer
-    }
+    let urlCache: URLCache
 }
 
 extension AppDependencies {
@@ -46,6 +41,12 @@ extension AppDependencies {
         let favouritesViewModel = DefaultFavouritesViewModel(
         toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext))
         
-        return .init(breedsViewModel: breedsViewModel, favouritesViewModel: favouritesViewModel, modelContainer: sharedModelContainer)
+        // Increased capacity for image caching
+        let urlCache = URLCache(
+            memoryCapacity: 50 * 1024 * 1024, // 50mb
+            diskCapacity: 500 * 1024 * 1024 // 500mb
+        )
+        
+        return .init(breedsViewModel: breedsViewModel, favouritesViewModel: favouritesViewModel, modelContainer: sharedModelContainer, urlCache: urlCache)
     }
 }

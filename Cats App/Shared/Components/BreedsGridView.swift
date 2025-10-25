@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import CachedAsyncImage
 import SwiftData
 
 struct BreedsGridView: View {
@@ -88,7 +87,7 @@ struct BreedsGridView: View {
     func image(url: URL?) -> some View {
         Group {
             if let url = url {
-                CachedAsyncImage(url: url) { phase in
+                AsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:
                         emptyImageBackground()
