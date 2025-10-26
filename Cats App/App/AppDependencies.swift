@@ -29,7 +29,7 @@ extension AppDependencies {
                 fatalError("Could not create ModelContainer: \(error)")
             }
         }()
-        let modelContext = ModelContext(sharedModelContainer)
+        let modelContext = sharedModelContainer.mainContext
         
         let breedsViewModel = DefaultBreedsViewModel(
             breedsDataSource: DefaultBreedsDataSource(
@@ -44,7 +44,7 @@ extension AppDependencies {
         // Increased capacity for image caching
         let urlCache = URLCache(
             memoryCapacity: 50 * 1024 * 1024, // 50mb
-            diskCapacity: 500 * 1024 * 1024 // 500mb
+            diskCapacity: 200 * 1024 * 1024 // 500mb
         )
         
         return .init(breedsViewModel: breedsViewModel, favouritesViewModel: favouritesViewModel, modelContainer: sharedModelContainer, urlCache: urlCache)

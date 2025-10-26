@@ -63,6 +63,7 @@
 				Shared/AppConstants.swift,
 				Shared/Components/BouncePressStyle.swift,
 				Shared/Components/BreedsGridView.swift,
+				Shared/Components/CachedAsyncImage.swift,
 				"Shared/Extensions/CGFloat+Extensions.swift",
 				Shared/ViewModifier/TappableAreaModifier.swift,
 				UseCase/ToggleFavouriteUseCase.swift,

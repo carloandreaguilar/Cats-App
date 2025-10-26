@@ -14,7 +14,7 @@ extension AppDependencies {
             let schema = Schema([
                 CatBreed.self,
             ])
-            let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+            let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
             
             do {
                 return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -22,7 +22,7 @@ extension AppDependencies {
                 fatalError("Could not create ModelContainer: \(error)")
             }
         }()
-        let modelContext = ModelContext(sharedModelContainer)
+        let modelContext = sharedModelContainer.mainContext
         
         let breedsViewModel = DefaultBreedsViewModel(
             breedsDataSource: DefaultBreedsDataSource(

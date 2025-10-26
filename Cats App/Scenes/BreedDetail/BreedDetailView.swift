@@ -75,35 +75,19 @@ struct BreedDetailView: View {
     func image() -> some View {
         Group {
             if let url = viewModel.breed.imageURL {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        emptyImageBackground()
-                            .aspectRatio(1.0, contentMode: .fit)
-                            .overlay {
-                                ProgressView()
-                            }
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .overlay(
-                                /// Thin border around image, to make image shape visible when image background matches the app background.
-                                RoundedRectangle(cornerRadius: imageCornerRadius)
-                                    .stroke(Color.secondary, lineWidth: 0.5)
-                            )
-                    case .failure:
-                        emptyImageBackground()
-                            .aspectRatio(1.0, contentMode: .fit)
-                            .overlay {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundStyle(.secondary)
-                            }
-                    default:
-                        emptyImageBackground()
-                            .aspectRatio(1.0, contentMode: .fit)
-                    }
+                CachedAsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .overlay(
+                            /// Thin border around image, to make image shape visible when image background matches the app background.
+                            RoundedRectangle(cornerRadius: imageCornerRadius)
+                                .stroke(Color.secondary, lineWidth: 0.5)
+                        )
+                } placeholder: {
+                    emptyImageBackground()
+                        .aspectRatio(1.0, contentMode: .fit)
                 }
             } else {
                 Image(AppConstants.Asset.defaultCatImage)
