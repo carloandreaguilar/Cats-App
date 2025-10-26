@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct CachedAsyncImage<Content: View, Placeholder: View>: View {
-    let url: URL?
+    let url: URL
     let content: (Image) -> Content
     let placeholder: () -> Placeholder
     
     @State private var image: Image? = nil
     @State private var isLoading = false
 
-    init(url: URL?,
+    init(url: URL,
          @ViewBuilder content: @escaping (Image) -> Content,
          @ViewBuilder placeholder: @escaping () -> Placeholder) {
         self.url = url
@@ -23,12 +23,12 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         self.placeholder = placeholder
     }
 
-    init(url: URL?) where Content == Image, Placeholder == EmptyView {
+    init(url: URL) where Content == Image, Placeholder == EmptyView {
         self.url = url
         self.content = { image in image }
         self.placeholder = { EmptyView() }
     }
-
+    
     var body: some View {
         if let image = image {
             content(image)
@@ -41,7 +41,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     }
     
     private func loadImage() async {
-        guard let url = url, image == nil, !isLoading else { return }
+        guard image == nil, !isLoading else { return }
         isLoading = true
         
         let request = URLRequest(url: url, cachePolicy: .reloadRevalidatingCacheData)
