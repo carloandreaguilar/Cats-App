@@ -10,7 +10,7 @@ import SwiftData
 
 @main
 struct Cats_AppApp: App {
-    private let dependencies: AppDependencies = .production
+    private let dependencies: AppDependencies = DefaultAppDependencies()
     
     init() {
         URLCache.shared = dependencies.urlCache
@@ -18,8 +18,9 @@ struct Cats_AppApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainView(appDependencies: dependencies)
+            MainView()
         }
         .modelContainer(dependencies.modelContainer)
+        .environment(\.appDependencies, dependencies)
     }
 }

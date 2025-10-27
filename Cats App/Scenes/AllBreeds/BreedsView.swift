@@ -11,8 +11,6 @@ import SwiftData
 struct BreedsView: View {
     static let defaultTitle = "Cat breeds"
     
-    @Environment(\.modelContext) var modelContext
-    
     @State private var viewModel: BreedsViewModel
     
     @Binding private var navigationPath: NavigationPath
@@ -23,6 +21,8 @@ struct BreedsView: View {
     @State private var animatingOfflineBanner = false
     
     @State private var scrollViewId = UUID()
+    
+    @Environment(\.appDependencies) private var appDependencies
     
     private let bannersHapticGenerator = UIImpactFeedbackGenerator(style: .soft)
     
@@ -92,7 +92,7 @@ struct BreedsView: View {
             .navigationDestination(for: BreedDestination.self, destination: { destination in
                 switch destination {
                 case .detail(let breed):
-                    BreedDetailView(viewModel: DefaultBreedDetailViewModel(breed: breed, toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)))
+                    BreedDetailView(viewModel: appDependencies.makeDetailViewModel(breed: breed))
                 }
             })
             .overlay(alignment: .bottom) {
@@ -284,7 +284,7 @@ struct BreedsView: View {
             breedsDataSource: DefaultBreedsDataSource(
                 networkService: DefaultBreedsNetworkService(),
                 persistenceService: DefaultBreedsPersistenceService(modelContext: context)
-            ), toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: context)
+            ), toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)
         ), navigationPath: .constant(NavigationPath())
     )
     .modelContainer(container)

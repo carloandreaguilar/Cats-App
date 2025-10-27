@@ -20,7 +20,7 @@ struct FavouriteBreedsViewModelTests {
     init() {
         let container = try! ModelContainer(for: CatBreed.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         let context = ModelContext(container)
-        self.sut = .init(toggleFavouriteUseCase: .init(modelContext: context))
+        self.sut = .init(toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context))
     }
     
     @Test

@@ -11,7 +11,7 @@ import SwiftData
 struct FavouriteBreedsView: View {
     static let defaultTitle = "Favourites"
     
-    @Environment(\.modelContext) var modelContext
+    @Environment(\.appDependencies) private var appDependencies
     
     @State private var viewModel: FavouritesViewModel
     
@@ -39,7 +39,7 @@ struct FavouriteBreedsView: View {
         .navigationDestination(for: BreedDestination.self, destination: { destination in
             switch destination {
             case .detail(let breed):
-                BreedDetailView(viewModel: DefaultBreedDetailViewModel(breed: breed, toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)))
+                BreedDetailView(viewModel: appDependencies.makeDetailViewModel(breed: breed))
             }
         })
     }
@@ -89,5 +89,5 @@ struct FavouriteBreedsView: View {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
     
-    FavouriteBreedsView(viewModel: DefaultFavouritesViewModel( toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: context)), navigationPath: .constant(NavigationPath()))
+    FavouriteBreedsView(viewModel: DefaultFavouritesViewModel(toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)), navigationPath: .constant(NavigationPath()))
 }

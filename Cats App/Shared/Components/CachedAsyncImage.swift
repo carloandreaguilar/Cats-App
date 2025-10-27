@@ -16,17 +16,11 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     @State private var isLoading = false
 
     init(url: URL,
-         @ViewBuilder content: @escaping (Image) -> Content,
-         @ViewBuilder placeholder: @escaping () -> Placeholder) {
+         @ViewBuilder content: @escaping (Image) -> Content = { image in image },
+         @ViewBuilder placeholder: @escaping () -> Placeholder = { EmptyView() }) {
         self.url = url
         self.content = content
         self.placeholder = placeholder
-    }
-
-    init(url: URL) where Content == Image, Placeholder == EmptyView {
-        self.url = url
-        self.content = { image in image }
-        self.placeholder = { EmptyView() }
     }
     
     var body: some View {

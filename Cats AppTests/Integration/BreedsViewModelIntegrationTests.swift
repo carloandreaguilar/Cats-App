@@ -24,7 +24,7 @@ struct BreedsViewModelIntegrationTests {
         let context = ModelContext(container)
         self.persistence = DefaultBreedsPersistenceService(modelContext: context)
         let dataSource = DefaultBreedsDataSource(networkService: mockNetwork, persistenceService: persistence, pageSize: pageSize)
-        self.viewModel = DefaultBreedsViewModel(breedsDataSource: dataSource, toggleFavouriteUseCase: .init(modelContext: context))
+        self.viewModel = DefaultBreedsViewModel(breedsDataSource: dataSource, toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context))
     }
     
     @Test
