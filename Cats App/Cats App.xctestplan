@@ -1,0 +1,31 @@
+{
+  "configurations" : [
+    {
+      "id" : "F15DE806-7F47-47AA-A6E7-6A2AB3A2AE28",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Cats App.xcodeproj",
+        "identifier" : "68A5DCEA2EA1274500B83D02",
+        "name" : "Cats AppTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Cats App.xcodeproj",
+        "identifier" : "68A5DCF42EA1274500B83D02",
+        "name" : "Cats AppUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

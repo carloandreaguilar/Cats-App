@@ -18,7 +18,7 @@ struct ToggleFavouriteUseCaseTests {
     func testToggleFavourite() throws {
         let container = try! ModelContainer(for: CatBreed.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         let context = ModelContext(container)
-        let useCase = ToggleFavouriteUseCase(modelContext: context)
+        let useCase = DefaultToggleFavouriteUseCase(modelContext: context)
         let cat = CatBreed(CatBreedDTO(id: "1", name: "Cat"))
         context.insert(cat)
         #expect((cat.isFavourited ?? false) == false)

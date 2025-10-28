@@ -7,25 +7,22 @@
 
 import Observation
 
-extension BreedDetailView {
+protocol BreedDetailViewModel {
+    var breed: CatBreed { get }
+    func toggleFavourite() throws
+}
+
+@Observable
+class DefaultBreedDetailViewModel: BreedDetailViewModel {
+    private(set) var breed: CatBreed
+    private let toggleFavouriteUseCase: ToggleFavouriteUseCase
     
-    protocol ViewModel {
-        var breed: CatBreed { get }
-        func toggleFavourite() throws
+    init(breed: CatBreed, toggleFavouriteUseCase: ToggleFavouriteUseCase) {
+        self.breed = breed
+        self.toggleFavouriteUseCase = toggleFavouriteUseCase
     }
     
-    @Observable
-    class DefaultViewModel: ViewModel {
-        private(set) var breed: CatBreed
-        private let toggleFavouriteUseCase: ToggleFavouriteUseCase
-        
-        init(breed: CatBreed, toggleFavouriteUseCase: ToggleFavouriteUseCase) {
-            self.breed = breed
-            self.toggleFavouriteUseCase = toggleFavouriteUseCase
-        }
-        
-        func toggleFavourite() throws {
-            try toggleFavouriteUseCase.toggle(for: breed)
-        }
+    func toggleFavourite() throws {
+        try toggleFavouriteUseCase.toggle(for: breed)
     }
 }

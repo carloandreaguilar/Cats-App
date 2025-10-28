@@ -1,0 +1,49 @@
+name: iOS CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.0.app
+
+      - name: Install xcpretty
+        run: gem install xcpretty
+
+      - name: Build and test
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project "Cats App.xcodeproj" \
+            -scheme "Cats App" \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,OS=latest,name=iPhone 17' \
+            clean test | xcpretty || exit ${PIPESTATUS[0]}
+        env:
+          NSUnbufferedIO: "YES"
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-logs
+          path: ~/Library/Logs/DiagnosticReports
+

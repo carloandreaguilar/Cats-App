@@ -11,9 +11,7 @@ import SwiftData
 struct BreedsView: View {
     static let defaultTitle = "Cat breeds"
     
-    @Environment(\.modelContext) var modelContext
-    
-    @State private var viewModel: ViewModel
+    @State private var viewModel: BreedsViewModel
     
     @Binding private var navigationPath: NavigationPath
     @State private var presentingOfflineAlert = false
@@ -24,9 +22,11 @@ struct BreedsView: View {
     
     @State private var scrollViewId = UUID()
     
+    @Environment(\.appDependencies) private var appDependencies
+    
     private let bannersHapticGenerator = UIImpactFeedbackGenerator(style: .soft)
     
-    init(viewModel: ViewModel, navigationPath: Binding<NavigationPath>) {
+    init(viewModel: BreedsViewModel, navigationPath: Binding<NavigationPath>) {
         self.viewModel = viewModel
         self._navigationPath = navigationPath
     }
@@ -92,7 +92,7 @@ struct BreedsView: View {
             .navigationDestination(for: BreedDestination.self, destination: { destination in
                 switch destination {
                 case .detail(let breed):
-                    BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)))
+                    BreedDetailView(viewModel: appDependencies.makeDetailViewModel(breed: breed))
                 }
             })
             .overlay(alignment: .bottom) {
@@ -176,6 +176,7 @@ struct BreedsView: View {
             .padding(.bottom)
         }
         .buttonStyle(BouncePressStyle())
+        .fixedSize()
         .accessibilityIdentifier("noConnectionBanner")
     }
     
@@ -217,6 +218,7 @@ struct BreedsView: View {
         }
         .buttonStyle(BouncePressStyle())
         .disabled(animatingOfflineBanner)
+        .fixedSize()
         .accessibilityIdentifier("offlineModeBanner")
     }
     
@@ -238,6 +240,7 @@ struct BreedsView: View {
                 }
             }
         }
+        .fixedSize()
         .accessibilityIdentifier("reconnectedToast")
     }
     
@@ -277,11 +280,11 @@ struct BreedsView: View {
     let context = container.mainContext
 
     BreedsView(
-        viewModel: BreedsView.DefaultViewModel(
+        viewModel: DefaultBreedsViewModel(
             breedsDataSource: DefaultBreedsDataSource(
                 networkService: DefaultBreedsNetworkService(),
                 persistenceService: DefaultBreedsPersistenceService(modelContext: context)
-            ), toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: context)
+            ), toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)
         ), navigationPath: .constant(NavigationPath())
     )
     .modelContainer(container)

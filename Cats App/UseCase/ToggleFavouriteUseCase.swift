@@ -7,7 +7,11 @@
 
 import SwiftData
 
-struct ToggleFavouriteUseCase {
+protocol ToggleFavouriteUseCase {
+    func toggle(for breed: CatBreed) throws
+}
+
+struct DefaultToggleFavouriteUseCase: ToggleFavouriteUseCase {
     let modelContext: ModelContext
     
     func toggle(for breed: CatBreed) throws {

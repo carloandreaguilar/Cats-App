@@ -14,15 +14,15 @@ import SwiftData
 @Suite("BreedsViewModel")
 struct BreedsViewModelTests {
     let mockDataSource: MockBreedsDataSource!
-    let sut: BreedsView.DefaultViewModel!
+    let sut: DefaultBreedsViewModel!
 
     init() {
         mockDataSource = MockBreedsDataSource()
         let container = try! ModelContainer(for: CatBreed.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         let context = ModelContext(container)
-        sut = BreedsView.DefaultViewModel(
+        sut = DefaultBreedsViewModel(
             breedsDataSource: mockDataSource,
-            toggleFavouriteUseCase: .init(modelContext: context)
+            toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)
         )
     }
     
@@ -40,9 +40,9 @@ struct BreedsViewModelTests {
         mockDataSource.shouldDelay = true
 
         actor StateRecorder {
-            var values: [BreedsView.ViewState] = []
-            func append(_ state: BreedsView.ViewState) { values.append(state) }
-            func snapshot() -> [BreedsView.ViewState] { values }
+            var values: [BreedsViewState] = []
+            func append(_ state: BreedsViewState) { values.append(state) }
+            func snapshot() -> [BreedsViewState] { values }
         }
         let recorder = StateRecorder()
 
@@ -66,7 +66,7 @@ struct BreedsViewModelTests {
         try await Task.sleep(for: .seconds(1))
         
         let observedStates = await recorder.snapshot()
-        let expectedStates: [BreedsView.ViewState] = [
+        let expectedStates: [BreedsViewState] = [
             .loadingFirstPage,
             .loaded(properties: .init(isReload: true, hasMore: true, hasConnection: true, dataSourceMode: .online)),
             .loadingMore,
