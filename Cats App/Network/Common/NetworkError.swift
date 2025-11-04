@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum NetworkError: Error, LocalizedError {
+enum NetworkError: Error {
     case network(underlying: Error)
     case server(statusCode: Int, message: String?)
     case decoding(underlying: Error)
