@@ -130,13 +130,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		680EB5F22EAC3ABB0035567F /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		68A5DCD32EA1274300B83D02 = {
 			isa = PBXGroup;
 			children = (
@@ -144,7 +137,6 @@
 				68A5DCEE2EA1274500B83D02 /* Cats AppTests */,
 				68A5DCF82EA1274500B83D02 /* Cats AppUITests */,
 				680EB5CD2EAC3A300035567F /* UITestHost */,
-				680EB5F22EAC3ABB0035567F /* Frameworks */,
 				68A5DCDD2EA1274300B83D02 /* Products */,
 			);
 			sourceTree = "<group>";
