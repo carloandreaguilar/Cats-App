@@ -32,7 +32,7 @@ struct BreedsView: View {
     }
     
     var body: some View {
-            Group {
+            ZStack {
                 switch viewModel.viewState {
                 case .loadingFirstPage:
                     emptyLoadingView()
@@ -44,6 +44,7 @@ struct BreedsView: View {
                     }
                 }
             }
+            .animation(.default, value: viewModel.viewState != .loadingFirstPage)
             .searchable(text: $viewModel.query)
             .onSubmit(of: .search) {
                 Task { try? await viewModel.loadFirstPage() }
