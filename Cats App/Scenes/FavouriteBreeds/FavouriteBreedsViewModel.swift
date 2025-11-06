@@ -16,6 +16,7 @@ protocol FavouritesViewModel {
 @Observable
 class DefaultFavouritesViewModel: FavouritesViewModel {
     private let toggleFavouriteUseCase: ToggleFavouriteUseCase
+    private let formatter = NumberFormatter()
     
     init(toggleFavouriteUseCase: ToggleFavouriteUseCase) {
         self.toggleFavouriteUseCase = toggleFavouriteUseCase
@@ -30,7 +31,6 @@ class DefaultFavouritesViewModel: FavouritesViewModel {
 
         let average = lifespans.reduce(0, +) / Double(lifespans.count)
 
-        let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 1
         formatter.minimumFractionDigits = 0
