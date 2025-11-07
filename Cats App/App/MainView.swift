@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct MainView: View {
-    @Environment(\.modelContext) var modelContext
+    @Environment(\.appDependencies) var appDependencies
     @State private var selectedTab = 0
     @State private var breedsNavigationPath = NavigationPath()
     @State private var favouriteBreedsNavigationPath = NavigationPath()
@@ -20,12 +20,8 @@ struct MainView: View {
             NavigationStack(path: $breedsNavigationPath) {
                 BreedsView(
                     viewModel:
-                        BreedsView.DefaultViewModel(
-                        breedsDataSource: DefaultBreedsDataSource(
-                            networkService: DefaultBreedsNetworkService(),
-                            persistenceService: DefaultBreedsPersistenceService(modelContext: modelContext)
-                        ), toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)
-                    ), navigationPath: $breedsNavigationPath
+                        appDependencies.makeBreedsViewModel(),
+                    navigationPath: $breedsNavigationPath
                 )
                 .navigationTitle(BreedsView.defaultTitle)
             }
@@ -37,8 +33,7 @@ struct MainView: View {
             NavigationStack(path: $favouriteBreedsNavigationPath) {
                 FavouriteBreedsView(
                     viewModel:
-                        FavouriteBreedsView.DefaultViewModel(
-                        toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)),
+                        appDependencies.makeFavouritesViewModel(),
                     navigationPath: $favouriteBreedsNavigationPath
                 )
                 .navigationTitle(FavouriteBreedsView.defaultTitle)
@@ -56,6 +51,8 @@ struct MainView: View {
 }
 
 #Preview {
+    let appDependencies = DefaultAppDependencies()
     MainView()
-        .modelContainer(for: CatBreed.self, inMemory: true)
+        .modelContainer(appDependencies.modelContainer)
+        .environment(\.appDependencies, appDependencies)
 }

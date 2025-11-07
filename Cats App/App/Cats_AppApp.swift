@@ -10,23 +10,17 @@ import SwiftData
 
 @main
 struct Cats_AppApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            CatBreed.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    private let dependencies: AppDependencies = DefaultAppDependencies()
+    
+    init() {
+        URLCache.shared = dependencies.urlCache
+    }
 
     var body: some Scene {
         WindowGroup {
             MainView()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(dependencies.modelContainer)
+        .environment(\.appDependencies, dependencies)
     }
 }

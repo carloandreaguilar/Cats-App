@@ -15,9 +15,11 @@ protocol BreedsPersistenceService {
 
 class DefaultBreedsPersistenceService: BreedsPersistenceService {
     private let modelContext: ModelContext
+    private let daysToKeepDataFor: Int
     
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, daysToKeepDataFor: Int = 30) {
         self.modelContext = modelContext
+        self.daysToKeepDataFor = daysToKeepDataFor
     }
     
     func fetchPersistedBreeds(query: String?, page: Int, pageSize: Int) throws -> [CatBreed] {
@@ -42,7 +44,7 @@ class DefaultBreedsPersistenceService: BreedsPersistenceService {
     
     func persist(_ breedDtos: [CatBreedDTO]) throws -> [CatBreed] {
         guard !breedDtos.isEmpty else { return [] }
-        try pruneOldPersistence(olderThanDays: 30)
+        try pruneOldData()
 
         let breedDtoIds = breedDtos.map(\.id)
         let descriptor = FetchDescriptor<CatBreed>(
@@ -68,8 +70,8 @@ class DefaultBreedsPersistenceService: BreedsPersistenceService {
         return persistedBreeds
     }
     
-    private func pruneOldPersistence(olderThanDays: Int) throws {
-        guard let cutoff = Calendar.current.date(byAdding: .day, value: -olderThanDays, to: .now) else { return }
+    private func pruneOldData() throws {
+        guard let cutoff = Calendar.current.date(byAdding: .day, value: -daysToKeepDataFor, to: .now) else { return }
         let cutoffDate = cutoff
         let batchSize = 1000
         var itemsToDelete = [CatBreed]()

@@ -11,9 +11,9 @@ import SwiftData
 struct FavouriteBreedsView: View {
     static let defaultTitle = "Favourites"
     
-    @Environment(\.modelContext) var modelContext
+    @Environment(\.appDependencies) private var appDependencies
     
-    @State private var viewModel: ViewModel
+    @State private var viewModel: FavouritesViewModel
     
     @Binding private var navigationPath: NavigationPath
     
@@ -23,7 +23,7 @@ struct FavouriteBreedsView: View {
     )
     private var favourites: [CatBreed]
     
-    init(viewModel: ViewModel, navigationPath: Binding<NavigationPath>) {
+    init(viewModel: FavouritesViewModel, navigationPath: Binding<NavigationPath>) {
         self.viewModel = viewModel
         self._navigationPath = navigationPath
     }
@@ -39,7 +39,7 @@ struct FavouriteBreedsView: View {
         .navigationDestination(for: BreedDestination.self, destination: { destination in
             switch destination {
             case .detail(let breed):
-                BreedDetailView(viewModel: BreedDetailView.DefaultViewModel(breed: breed, toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: modelContext)))
+                BreedDetailView(viewModel: appDependencies.makeDetailViewModel(breed: breed))
             }
         })
     }
@@ -89,5 +89,5 @@ struct FavouriteBreedsView: View {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
     
-    FavouriteBreedsView(viewModel: FavouriteBreedsView.DefaultViewModel( toggleFavouriteUseCase: ToggleFavouriteUseCase(modelContext: context)), navigationPath: .constant(NavigationPath()))
+    FavouriteBreedsView(viewModel: DefaultFavouritesViewModel(toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)), navigationPath: .constant(NavigationPath()))
 }

@@ -6,11 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		68CF3D402EA2DC1E0005632C /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 68CF3D3F2EA2DC1E0005632C /* CachedAsyncImage */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
+		680EB5D72EAC3A370035567F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 68A5DCD42EA1274300B83D02 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 680EB5CB2EAC3A300035567F;
+			remoteInfo = UITestHost;
+		};
 		68A5DCEC2EA1274500B83D02 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 68A5DCD42EA1274300B83D02 /* Project object */;
@@ -28,14 +31,58 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		680EB5CC2EAC3A300035567F /* UITestHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UITestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68A5DCDC2EA1274300B83D02 /* Cats App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Cats App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		68A5DCEB2EA1274500B83D02 /* Cats AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Cats AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		68A5DCF52EA1274500B83D02 /* Cats AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Cats AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		680EB5F12EAC3A950035567F /* Exceptions for "Cats App" folder in "UITestHost" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/AppDependencies.swift,
+				App/MainView.swift,
+				Assets.xcassets,
+				Data/BreedsDataSource.swift,
+				Data/BreedsPersistenceService.swift,
+				Model/CatBreed.swift,
+				Model/CatBreedDTO.swift,
+				Model/DataSourceMode.swift,
+				Model/Page.swift,
+				Navigation/BreedDestination.swift,
+				Network/BreedsNetworkService.swift,
+				Network/Common/NetworkError.swift,
+				Network/Common/RestNetworkClient.swift,
+				Scenes/AllBreeds/BreedsView.swift,
+				Scenes/AllBreeds/BreedsViewModel.swift,
+				Scenes/BreedDetail/BreedDetailView.swift,
+				Scenes/BreedDetail/BreedDetailViewModel.swift,
+				Scenes/FavouriteBreeds/FavouriteBreedsView.swift,
+				Scenes/FavouriteBreeds/FavouriteBreedsViewModel.swift,
+				Shared/AppConstants.swift,
+				Shared/Components/BouncePressStyle.swift,
+				Shared/Components/BreedsGridView.swift,
+				Shared/Components/CachedAsyncImage.swift,
+				"Shared/Extensions/CGFloat+Extensions.swift",
+				Shared/ViewModifier/TappableAreaModifier.swift,
+				UseCase/ToggleFavouriteUseCase.swift,
+			);
+			target = 680EB5CB2EAC3A300035567F /* UITestHost */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		680EB5CD2EAC3A300035567F /* UITestHost */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = UITestHost;
+			sourceTree = "<group>";
+		};
 		68A5DCDE2EA1274300B83D02 /* Cats App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				680EB5F12EAC3A950035567F /* Exceptions for "Cats App" folder in "UITestHost" target */,
+			);
 			path = "Cats App";
 			sourceTree = "<group>";
 		};
@@ -52,11 +99,17 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		680EB5C92EAC3A300035567F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		68A5DCD92EA1274300B83D02 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68CF3D402EA2DC1E0005632C /* CachedAsyncImage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +136,7 @@
 				68A5DCDE2EA1274300B83D02 /* Cats App */,
 				68A5DCEE2EA1274500B83D02 /* Cats AppTests */,
 				68A5DCF82EA1274500B83D02 /* Cats AppUITests */,
+				680EB5CD2EAC3A300035567F /* UITestHost */,
 				68A5DCDD2EA1274300B83D02 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -93,6 +147,7 @@
 				68A5DCDC2EA1274300B83D02 /* Cats App.app */,
 				68A5DCEB2EA1274500B83D02 /* Cats AppTests.xctest */,
 				68A5DCF52EA1274500B83D02 /* Cats AppUITests.xctest */,
+				680EB5CC2EAC3A300035567F /* UITestHost.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -100,6 +155,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		680EB5CB2EAC3A300035567F /* UITestHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 680EB5D62EAC3A310035567F /* Build configuration list for PBXNativeTarget "UITestHost" */;
+			buildPhases = (
+				680EB5C82EAC3A300035567F /* Sources */,
+				680EB5C92EAC3A300035567F /* Frameworks */,
+				680EB5CA2EAC3A300035567F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				680EB5CD2EAC3A300035567F /* UITestHost */,
+			);
+			name = UITestHost;
+			packageProductDependencies = (
+			);
+			productName = UITestHost;
+			productReference = 680EB5CC2EAC3A300035567F /* UITestHost.app */;
+			productType = "com.apple.product-type.application";
+		};
 		68A5DCDB2EA1274300B83D02 /* Cats App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 68A5DCFF2EA1274500B83D02 /* Build configuration list for PBXNativeTarget "Cats App" */;
@@ -117,7 +194,6 @@
 			);
 			name = "Cats App";
 			packageProductDependencies = (
-				68CF3D3F2EA2DC1E0005632C /* CachedAsyncImage */,
 			);
 			productName = "Cats App";
 			productReference = 68A5DCDC2EA1274300B83D02 /* Cats App.app */;
@@ -158,6 +234,7 @@
 			);
 			dependencies = (
 				68A5DCF72EA1274500B83D02 /* PBXTargetDependency */,
+				680EB5D82EAC3A370035567F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				68A5DCF82EA1274500B83D02 /* Cats AppUITests */,
@@ -179,6 +256,9 @@
 				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					680EB5CB2EAC3A300035567F = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
 					68A5DCDB2EA1274300B83D02 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
@@ -188,7 +268,7 @@
 					};
 					68A5DCF42EA1274500B83D02 = {
 						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = 68A5DCDB2EA1274300B83D02;
+						TestTargetID = 680EB5CB2EAC3A300035567F;
 					};
 				};
 			};
@@ -202,7 +282,6 @@
 			mainGroup = 68A5DCD32EA1274300B83D02;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				68CF3D3E2EA2DC1E0005632C /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 68A5DCDD2EA1274300B83D02 /* Products */;
@@ -212,11 +291,19 @@
 				68A5DCDB2EA1274300B83D02 /* Cats App */,
 				68A5DCEA2EA1274500B83D02 /* Cats AppTests */,
 				68A5DCF42EA1274500B83D02 /* Cats AppUITests */,
+				680EB5CB2EAC3A300035567F /* UITestHost */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		680EB5CA2EAC3A300035567F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		68A5DCDA2EA1274300B83D02 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -241,6 +328,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		680EB5C82EAC3A300035567F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		68A5DCD82EA1274300B83D02 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -265,6 +359,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		680EB5D82EAC3A370035567F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 680EB5CB2EAC3A300035567F /* UITestHost */;
+			targetProxy = 680EB5D72EAC3A370035567F /* PBXContainerItemProxy */;
+		};
 		68A5DCED2EA1274500B83D02 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 68A5DCDB2EA1274300B83D02 /* Cats App */;
@@ -278,6 +377,70 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		680EB5D42EAC3A310035567F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = P5Y97WC5V3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = carloandreaguilar.UITestHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		680EB5D52EAC3A310035567F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = P5Y97WC5V3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = carloandreaguilar.UITestHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		68A5DCFD2EA1274500B83D02 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -523,7 +686,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "Cats App";
+				TEST_TARGET_NAME = UITestHost;
 			};
 			name = Debug;
 		};
@@ -543,13 +706,22 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "Cats App";
+				TEST_TARGET_NAME = UITestHost;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		680EB5D62EAC3A310035567F /* Build configuration list for PBXNativeTarget "UITestHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				680EB5D42EAC3A310035567F /* Debug */,
+				680EB5D52EAC3A310035567F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		68A5DCD72EA1274300B83D02 /* Build configuration list for PBXProject "Cats App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -587,25 +759,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		68CF3D3E2EA2DC1E0005632C /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/lorenzofiamingo/swiftui-cached-async-image";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.1.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		68CF3D3F2EA2DC1E0005632C /* CachedAsyncImage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 68CF3D3E2EA2DC1E0005632C /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */;
-			productName = CachedAsyncImage;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 68A5DCD42EA1274300B83D02 /* Project object */;
 }

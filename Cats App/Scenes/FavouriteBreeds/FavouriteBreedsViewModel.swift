@@ -8,41 +8,38 @@
 import Foundation
 import Observation
 
-extension FavouriteBreedsView {
+protocol FavouritesViewModel {
+    func formattedAverageLifespan(for breeds: [CatBreed]) -> String?
+    func toggleFavourite(for breed: CatBreed) throws
+}
+
+@Observable
+class DefaultFavouritesViewModel: FavouritesViewModel {
+    private let toggleFavouriteUseCase: ToggleFavouriteUseCase
+    private let formatter = NumberFormatter()
     
-    protocol ViewModel {
-        func formattedAverageLifespan(for breeds: [CatBreed]) -> String?
-        func toggleFavourite(for breed: CatBreed) throws
+    init(toggleFavouriteUseCase: ToggleFavouriteUseCase) {
+        self.toggleFavouriteUseCase = toggleFavouriteUseCase
     }
     
-    @Observable
-    class DefaultViewModel: ViewModel {
-        private let toggleFavouriteUseCase: ToggleFavouriteUseCase
-        
-        init(toggleFavouriteUseCase: ToggleFavouriteUseCase) {
-            self.toggleFavouriteUseCase = toggleFavouriteUseCase
+    func formattedAverageLifespan(for breeds: [CatBreed]) -> String? {
+        let lifespans: [Double] = breeds.compactMap { breed in
+            guard let lifespan = breed.maxLifespan else { return nil }
+            return Double(lifespan)
         }
-        
-        func formattedAverageLifespan(for breeds: [CatBreed]) -> String? {
-            let lifespans: [Double] = breeds.compactMap { breed in
-                guard let lifespan = breed.maxLifespan else { return nil }
-                return Double(lifespan)
-            }
-            guard !lifespans.isEmpty else { return nil }
+        guard !lifespans.isEmpty else { return nil }
 
-            let average = lifespans.reduce(0, +) / Double(lifespans.count)
+        let average = lifespans.reduce(0, +) / Double(lifespans.count)
 
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 1
-            formatter.minimumFractionDigits = 0
-            formatter.locale = .current
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 1
+        formatter.minimumFractionDigits = 0
+        formatter.locale = .current
 
-            return formatter.string(from: NSNumber(value: average))
-        }
-        
-        func toggleFavourite(for breed: CatBreed) throws {
-            try toggleFavouriteUseCase.toggle(for: breed)
-        }
+        return formatter.string(from: NSNumber(value: average))
+    }
+    
+    func toggleFavourite(for breed: CatBreed) throws {
+        try toggleFavouriteUseCase.toggle(for: breed)
     }
 }

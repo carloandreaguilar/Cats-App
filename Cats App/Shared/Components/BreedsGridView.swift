@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import CachedAsyncImage
 import SwiftData
 
 struct BreedsGridView: View {
@@ -88,31 +87,20 @@ struct BreedsGridView: View {
     func image(url: URL?) -> some View {
         Group {
             if let url = url {
-                CachedAsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        emptyImageBackground()
-                    case .success(let image):
-                        GeometryReader { geometryReader in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: geometryReader.size.width, height: geometryReader.size.width, alignment: .center)
-                                .overlay(
-                                    /// Thin border around image, to make image shape visible when image background matches the app background.
-                                    RoundedRectangle(cornerRadius: imageCornerRadius)
-                                        .stroke(Color.secondary, lineWidth: 0.5)
-                                )
-                        }
-                    case .failure:
-                        emptyImageBackground()
-                            .overlay {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundStyle(.secondary)
-                            }
-                    default:
-                        emptyImageBackground()
+                CachedAsyncImage(url: url) { image in
+                    GeometryReader { geometryReader in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: geometryReader.size.width, height: geometryReader.size.width, alignment: .center)
+                            .overlay(
+                                /// Thin border around image, to make image shape visible when image background matches the app background.
+                                RoundedRectangle(cornerRadius: imageCornerRadius)
+                                    .stroke(Color.secondary, lineWidth: 0.5)
+                            )
                     }
+                } placeholder: {
+                    emptyImageBackground()
                 }
                 
             } else {
