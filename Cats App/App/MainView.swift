@@ -20,8 +20,7 @@ struct MainView: View {
             NavigationStack(path: $breedsNavigationPath) {
                 BreedsView(
                     viewModel:
-                        appDependencies.makeBreedsViewModel(),
-                    navigationPath: $breedsNavigationPath
+                        appDependencies.makeBreedsViewModel(with: $breedsNavigationPath)
                 )
                 .navigationTitle(BreedsView.defaultTitle)
             }
@@ -33,8 +32,7 @@ struct MainView: View {
             NavigationStack(path: $favouriteBreedsNavigationPath) {
                 FavouriteBreedsView(
                     viewModel:
-                        appDependencies.makeFavouritesViewModel(),
-                    navigationPath: $favouriteBreedsNavigationPath
+                        appDependencies.makeFavouritesViewModel(with: $favouriteBreedsNavigationPath)
                 )
                 .navigationTitle(FavouriteBreedsView.defaultTitle)
             }
@@ -56,3 +54,4 @@ struct MainView: View {
         .modelContainer(appDependencies.modelContainer)
         .environment(\.appDependencies, appDependencies)
 }
+

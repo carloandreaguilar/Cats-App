@@ -10,9 +10,10 @@ import SwiftData
 
 struct BreedDetailView: View {
     
+    @State private var viewModel: BreedDetailViewModel
+    
     private let imageCornerRadius: CGFloat = 12
     private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
-    @State private var viewModel: BreedDetailViewModel
     
     init(viewModel: BreedDetailViewModel) {
         self.viewModel = viewModel
@@ -48,6 +49,9 @@ struct BreedDetailView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 favouriteButton()
             }
+        }
+        .task {
+            hapticGenerator.prepare()
         }
     }
     
@@ -107,6 +111,11 @@ struct BreedDetailView: View {
     func emptyImageBackground() -> some View {
         Rectangle()
             .fill(Color.gray.opacity(0.5))
+    }
+    
+    private func triggerHapticFeedback() {
+        hapticGenerator.prepare()
+        hapticGenerator.impactOccurred()
     }
 }
 

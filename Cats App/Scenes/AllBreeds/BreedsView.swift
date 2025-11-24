@@ -12,119 +12,84 @@ struct BreedsView: View {
     static let defaultTitle = "Cat breeds"
     
     @State private var viewModel: BreedsViewModel
-    
-    @Binding private var navigationPath: NavigationPath
-    @State private var presentingOfflineAlert = false
-    @State private var showingReconnectedToast = false
-    @State private var showingNoConnectionBanner = false
-    @State private var showingOfflineModeBanner = false
-    @State private var animatingOfflineBanner = false
-    
-    @State private var scrollViewId = UUID()
-    
     @Environment(\.appDependencies) private var appDependencies
     
-    private let bannersHapticGenerator = UIImpactFeedbackGenerator(style: .soft)
+    private let bannersHapticGenerator = UIImpactFeedbackGenerator(style: .light)
     
-    init(viewModel: BreedsViewModel, navigationPath: Binding<NavigationPath>) {
+    init(viewModel: BreedsViewModel) {
         self.viewModel = viewModel
-        self._navigationPath = navigationPath
     }
     
     var body: some View {
-            ZStack {
-                switch viewModel.viewState {
-                case .loadingFirstPage:
-                    emptyLoadingView()
-                case .loadingMore, .loaded:
-                    if viewModel.breeds.isEmpty {
-                        contentUnavailableView()
-                    } else {
-                        breedsScrollableGrid()
-                    }
-                }
-            }
-            .animation(.default, value: viewModel.viewState != .loadingFirstPage)
-            .searchable(text: $viewModel.query)
-            .onSubmit(of: .search) {
-                Task { try? await viewModel.loadFirstPage() }
-                
-            }
-            .onChange(of: viewModel.query) { oldValue, newValue in
-                if textWasCleared(newValue: newValue, oldValue: oldValue) {
-                    Task { try? await viewModel.loadFirstPage() }
-                }
-            }
-            .onChange(of: viewModel.viewState) { _, newValue in
-                if case .loaded(let properties) = newValue {
-                    if properties.isReload {
-                        scrollViewId = UUID()
-                    }
-                    withAnimation {
-                        showingNoConnectionBanner = !properties.hasConnection && properties.dataSourceMode == .online
-                        showingOfflineModeBanner = properties.dataSourceMode == .offline
-                    }
-                }
-            }
-            .refreshable {
-                let wasOffline: Bool = {
-                    if case .loaded(let properties) = viewModel.viewState {
-                        return properties.dataSourceMode == .offline
-                    } else {
-                        return false
-                    }
-                }()
-                do {
-                    try await viewModel.attemptNetworkRefresh()
-                    if wasOffline {
-                        showReconnectedToast()
-                    }
-                } catch {
-                    if wasOffline {
-                        presentingOfflineAlert = true
-                    }
-                }
-            }
-            .task {
+        ZStack {
+            switch viewModel.viewState {
+            case .loadingFirstPage:
+                emptyLoadingView()
+            case .loaded(let properties):
                 if viewModel.breeds.isEmpty {
-                    try? await viewModel.loadFirstPage()
+                    contentUnavailableView()
+                } else {
+                    breedsScrollableGrid()
+                        .id(properties.scrollViewId)
                 }
             }
-            .navigationDestination(for: BreedDestination.self, destination: { destination in
-                switch destination {
-                case .detail(let breed):
-                    BreedDetailView(viewModel: appDependencies.makeDetailViewModel(breed: breed))
-                }
-            })
-            .overlay(alignment: .bottom) {
-                if showingNoConnectionBanner {
+        }
+        .animation(.default, value: viewModel.viewState != .loadingFirstPage)
+        .searchable(text: $viewModel.query)
+        .onSubmit(of: .search) {
+            Task { try? await viewModel.loadFirstPage() }
+            
+        }
+        .onChange(of: viewModel.query) { oldValue, newValue in
+            if textWasCleared(newValue: newValue, oldValue: oldValue) {
+                Task { try? await viewModel.loadFirstPage() }
+            }
+        }
+        .refreshable {
+            try? await viewModel.attemptNetworkRefresh()
+        }
+        .task {
+            if viewModel.breeds.isEmpty {
+                try? await viewModel.loadFirstPage()
+            }
+            bannersHapticGenerator.prepare()
+        }
+        .navigationDestination(for: BreedDestination.self, destination: { destination in
+            switch destination {
+            case .detail(let breed):
+                BreedDetailView(viewModel: appDependencies.makeDetailViewModel(breed: breed))
+            }
+        })
+        .overlay(alignment: .bottom) {
+            ZStack {
+                if !viewModel.hasConnection && viewModel.dataSourceMode == .online {
                     noConnectionBanner()
                 }
-            }
-            .overlay(alignment: .bottom) {
-                if showingOfflineModeBanner {
+                if viewModel.dataSourceMode == .offline {
                     offlineModeBanner()
                 }
-            }
-            .overlay(alignment: .bottom) {
-                if showingReconnectedToast {
+                if viewModel.showingReconnectedToast {
                     reconnectedToast()
                 }
             }
-            .alert(isPresented: $presentingOfflineAlert) {
-                Alert(
-                    title: Text("Still offline"),
-                    message: Text("Check your connection and try again."),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
+            .animation(.default, value: viewModel.hasConnection)
+            .animation(.default, value: viewModel.dataSourceMode == .offline)
+            .animation(.default, value: viewModel.showingReconnectedToast)
+        }
+        .alert(isPresented: $viewModel.presentingOfflineAlert) {
+            Alert(
+                title: Text("Still offline"),
+                message: Text("Check your connection and try again."),
+                dismissButton: .default(Text("OK"))
+            )
+        }
     }
     
     private func breedsScrollableGrid() -> some View {
         ScrollView {
             VStack(spacing: 0) {
                 BreedsGridView(viewModel.breeds, onTap: { breed in
-                    navigationPath.append(BreedDestination.detail(breed: breed))
+                    viewModel.navigationPath.wrappedValue.append(BreedDestination.detail(breed: breed))
                 }, onFavouriteTap: { breed in
                     try? viewModel.toggleFavourite(for: breed)
                 }, onlastItemAppear: {
@@ -135,7 +100,6 @@ struct BreedsView: View {
             }
             .padding(.horizontal)
         }
-        .id(scrollViewId)
     }
     
     private func contentUnavailableView() -> some View {
@@ -156,8 +120,7 @@ struct BreedsView: View {
     
     private func noConnectionBanner() -> some View {
         Button {
-            bannersHapticGenerator.prepare()
-            bannersHapticGenerator.impactOccurred()
+            triggerBannersHapticFeedback()
             Task { try? await viewModel.activateOfflineMode() }
         } label: {
             VStack {
@@ -183,17 +146,16 @@ struct BreedsView: View {
     
     private func offlineModeBanner() -> some View {
         Button {
-            bannersHapticGenerator.prepare()
-            bannersHapticGenerator.impactOccurred()
-            animatingOfflineBanner = true
+            triggerBannersHapticFeedback()
+            viewModel.animatingOfflineBanner = true
             Task {
                 do {
                     try await viewModel.attemptNetworkRefresh()
                     showReconnectedToast()
                 } catch {
-                    presentingOfflineAlert = true
+                    viewModel.presentingOfflineAlert = true
                 }
-                animatingOfflineBanner = false
+                viewModel.animatingOfflineBanner = false
             }
         } label: {
             ZStack(alignment: .center) {
@@ -207,18 +169,19 @@ struct BreedsView: View {
                         .multilineTextAlignment(.leading)
                         .padding(.bottom, 2)
                 }
-                .opacity(animatingOfflineBanner ? 0 : 1)
-                if animatingOfflineBanner {
+                .opacity(viewModel.animatingOfflineBanner ? 0 : 1)
+                if viewModel.animatingOfflineBanner {
                     ProgressView()
                 }
             }
             .padding(.vertical)
             .padding(.horizontal, 24)
             .glassEffect(.clear.tint(.yellow.opacity(0.75)), in: Capsule())
+            .animation(.default, value: viewModel.animatingOfflineBanner)
             .padding(.bottom)
         }
         .buttonStyle(BouncePressStyle())
-        .disabled(animatingOfflineBanner)
+        .disabled(viewModel.animatingOfflineBanner)
         .fixedSize()
         .accessibilityIdentifier("offlineModeBanner")
     }
@@ -234,15 +197,16 @@ struct BreedsView: View {
         .padding(.horizontal, 24)
         .glassEffect(.clear.tint(.green.opacity(0.75)), in: Capsule())
         .padding(.bottom)
-        .onAppear {
+        .task {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 withAnimation {
-                    showingReconnectedToast = false
+                    viewModel.showingReconnectedToast = false
                 }
             }
         }
         .fixedSize()
         .accessibilityIdentifier("reconnectedToast")
+        .animation(.default, value: viewModel.showingReconnectedToast)
     }
     
     private func footer() -> some View {
@@ -250,10 +214,9 @@ struct BreedsView: View {
             Spacer()
             HStack {
                 Spacer()
-                switch viewModel.viewState {
-                case .loadingMore:
+                if case .loaded(properties: let properties) = viewModel.viewState, properties.loadingMore {
                     ProgressView()
-                default:
+                } else {
                     EmptyView()
                 }
                 Spacer()
@@ -266,7 +229,7 @@ struct BreedsView: View {
     private func showReconnectedToast() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation {
-                showingReconnectedToast = true
+                viewModel.showingReconnectedToast = true
             }
         }
     }
@@ -274,19 +237,25 @@ struct BreedsView: View {
     private func textWasCleared(newValue: String, oldValue: String) -> Bool {
         return newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !oldValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
+    
+    private func triggerBannersHapticFeedback() {
+        bannersHapticGenerator.prepare()
+        bannersHapticGenerator.impactOccurred()
+    }
 }
 
 #Preview {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
-
+    
     BreedsView(
         viewModel: DefaultBreedsViewModel(
             breedsDataSource: DefaultBreedsDataSource(
                 networkService: DefaultBreedsNetworkService(),
                 persistenceService: DefaultBreedsPersistenceService(modelContext: context)
-            ), toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)
-        ), navigationPath: .constant(NavigationPath())
+            ), toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context), navigationPath: .constant(NavigationPath())
+        )
     )
     .modelContainer(container)
 }
+

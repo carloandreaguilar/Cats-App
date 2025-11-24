@@ -6,23 +6,24 @@
 //
 
 import Observation
+import SwiftUI
 
 enum BreedsViewState: Equatable {
     case loadingFirstPage,
-         loadingMore,
          loaded(properties: Properties)
     
     struct Properties: Equatable {
-        init(isReload: Bool = false, hasMore: Bool, hasConnection: Bool, dataSourceMode: DataSourceMode) {
-            self.isReload = isReload
+        init(hasMore: Bool,
+             loadingMore: Bool = false,
+             scrollViewId: UUID
+        ) {
             self.hasMore = hasMore
-            self.hasConnection = hasConnection
-            self.dataSourceMode = dataSourceMode
+            self.loadingMore = loadingMore
+            self.scrollViewId = scrollViewId
         }
-        let isReload: Bool
         let hasMore: Bool
-        let hasConnection: Bool
-        let dataSourceMode: DataSourceMode
+        let loadingMore: Bool
+        let scrollViewId: UUID
     }
 }
 
@@ -30,6 +31,12 @@ protocol BreedsViewModel {
     var query: String { get set }
     var viewState: BreedsViewState { get }
     var breeds: [CatBreed] { get }
+    var navigationPath: Binding<NavigationPath> { get set }
+    var hasConnection: Bool { get }
+    var presentingOfflineAlert: Bool { get set }
+    var showingReconnectedToast: Bool { get set }
+    var dataSourceMode: DataSourceMode { get }
+    var animatingOfflineBanner: Bool { get set }
     func loadFirstPage() async throws
     func loadNextPageIfNeeded() async
     func activateOfflineMode() async throws
@@ -39,31 +46,38 @@ protocol BreedsViewModel {
 
 @Observable
 class DefaultBreedsViewModel: BreedsViewModel {
-    var query: String = ""
     private let breedsDataSource: BreedsDataSource
     private let toggleFavouriteUseCase: ToggleFavouriteUseCase
     private(set) var viewState: BreedsViewState = .loadingFirstPage
     private(set) var breeds: [CatBreed] = []
     private var hasMore = true
-    private var hasConnection = true
-    private var currentDataMode: DataSourceMode = .online
+    private var scrollViewId = UUID()
     
-    init(breedsDataSource: BreedsDataSource, toggleFavouriteUseCase: ToggleFavouriteUseCase) {
+    var query: String = ""
+    var hasConnection = true
+    var presentingOfflineAlert = false
+    var showingReconnectedToast = false
+    var animatingOfflineBanner = false
+    var dataSourceMode: DataSourceMode = .online
+    var navigationPath: Binding<NavigationPath>
+    
+    init(breedsDataSource: BreedsDataSource, toggleFavouriteUseCase: ToggleFavouriteUseCase, navigationPath: Binding<NavigationPath>) {
         self.breedsDataSource = breedsDataSource
         self.toggleFavouriteUseCase = toggleFavouriteUseCase
+        self.navigationPath = navigationPath
     }
     
     func loadFirstPage() async throws {
         viewState = .loadingFirstPage
         do {
-            switch currentDataMode {
+            switch dataSourceMode {
             case .online:
                 try await loadFirstPage(mode: .online)
             case .offline:
                 try await loadFirstPage(mode: .offline)
             }
         } catch {
-            viewState = .loaded(properties: .init(hasMore: hasMore, hasConnection: hasConnection, dataSourceMode: currentDataMode))
+            viewState = .loaded(properties: .init(hasMore: hasMore, loadingMore: false, scrollViewId: scrollViewId))
             throw error
         }
     }
@@ -71,29 +85,36 @@ class DefaultBreedsViewModel: BreedsViewModel {
     func loadNextPageIfNeeded() async {
         guard case .loaded(let properties) = viewState, properties.hasMore else { return }
         do {
-            viewState = .loadingMore
+            viewState = .loaded(properties: .init(hasMore: hasMore, loadingMore: true, scrollViewId: scrollViewId))
             let page = try await breedsDataSource.loadNextPage()
             updateData(from: page)
         } catch {
             if error is NetworkError {
                 hasConnection = false
-                viewState = .loaded(properties: .init(hasMore: hasMore, hasConnection: hasConnection, dataSourceMode: currentDataMode))
+                viewState = .loaded(properties: .init(hasMore: hasMore, scrollViewId: scrollViewId))
             }
         }
     }
     
     func activateOfflineMode() async throws {
-        currentDataMode = .offline
+        dataSourceMode = .offline
         try await loadFirstPage(mode: .offline)
     }
     
     func attemptNetworkRefresh() async throws {
+        let wasOffline = dataSourceMode == .offline
         do {
             let page = try await breedsDataSource.loadInitialPage(query: query, mode: .online)
+            if wasOffline {
+                showingReconnectedToast = true
+            }
             updateData(from: page)
         } catch {
             hasConnection = false
-            viewState = .loaded(properties: .init(hasMore: true, hasConnection: false, dataSourceMode: currentDataMode))
+            if wasOffline {
+                presentingOfflineAlert = true
+            }
+            viewState = .loaded(properties: .init(hasMore: true, scrollViewId: scrollViewId))
             throw error
         }
     }
@@ -117,6 +138,7 @@ class DefaultBreedsViewModel: BreedsViewModel {
     private func updateData(from page: Page<CatBreed>?) {
         if let page = page {
             if page.page == 1 {
+                scrollViewId = UUID()
                 breeds = page.items
             } else {
                 breeds.append(contentsOf: page.items)
@@ -125,11 +147,11 @@ class DefaultBreedsViewModel: BreedsViewModel {
                 hasConnection = true
             }
             hasMore = page.hasMore
-            currentDataMode = page.dataSourceMode
-            viewState = .loaded(properties: .init(isReload: page.page == 1, hasMore: page.hasMore, hasConnection: hasConnection, dataSourceMode: page.dataSourceMode))
+            dataSourceMode = page.dataSourceMode
+            viewState = .loaded(properties: .init(hasMore: page.hasMore, scrollViewId: scrollViewId))
         } else {
             hasMore = false
-            viewState = .loaded(properties: .init(hasMore: hasMore, hasConnection: hasConnection, dataSourceMode: currentDataMode))
+            viewState = .loaded(properties: .init(hasMore: hasMore, scrollViewId: scrollViewId))
         }
     }
 }
