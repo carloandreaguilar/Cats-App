@@ -7,6 +7,7 @@
 
 import Testing
 import SwiftData
+import SwiftUI
 @testable import Cats_App
 
 @MainActor
@@ -24,7 +25,7 @@ struct BreedsViewModelIntegrationTests {
         let context = ModelContext(container)
         self.persistence = DefaultBreedsPersistenceService(modelContext: context)
         let dataSource = DefaultBreedsDataSource(networkService: mockNetwork, persistenceService: persistence, pageSize: pageSize)
-        self.viewModel = DefaultBreedsViewModel(breedsDataSource: dataSource, toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context))
+        self.viewModel = DefaultBreedsViewModel(breedsDataSource: dataSource, toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context), navigationPath: .constant(.init()))
     }
     
     @Test
@@ -82,8 +83,8 @@ struct BreedsViewModelIntegrationTests {
         /// Should attempt to load from network first
         try await viewModel.loadFirstPage()
         
-        if case .loaded(let properties) = viewModel.viewState {
-            #expect(properties.dataSourceMode == .online)
+        if case .loaded = viewModel.viewState {
+            #expect(viewModel.dataSourceMode == .online)
             #expect(viewModel.breeds.count == min(pageSize, mockNetworkItems.count))
         } else {
             Issue.record("Wrong view state")
@@ -91,8 +92,8 @@ struct BreedsViewModelIntegrationTests {
       
         try await viewModel.activateOfflineMode()
         
-        if case .loaded(let properties) = viewModel.viewState {
-            #expect(properties.dataSourceMode == .offline)
+        if case .loaded = viewModel.viewState {
+            #expect(viewModel.dataSourceMode == .offline)
             /// First page of items should now be persisted.
             #expect(viewModel.breeds.count == min(pageSize, mockNetworkItems.count))
         } else {
@@ -114,8 +115,8 @@ struct BreedsViewModelIntegrationTests {
         /// Should attempt to load from network first
         try await viewModel.loadFirstPage()
         
-        if case .loaded(let properties) = viewModel.viewState {
-            #expect(properties.hasConnection == true)
+        if case .loaded = viewModel.viewState {
+            #expect(viewModel.hasConnection == true)
         } else {
             Issue.record("Wrong view state")
         }
@@ -124,8 +125,8 @@ struct BreedsViewModelIntegrationTests {
       
         await viewModel.loadNextPageIfNeeded()
         
-        if case .loaded(let properties) = viewModel.viewState {
-            #expect(properties.hasConnection == false)
+        if case .loaded = viewModel.viewState {
+            #expect(viewModel.hasConnection == false)
         } else {
             Issue.record("Wrong view state")
         }
@@ -143,8 +144,8 @@ struct BreedsViewModelIntegrationTests {
             Issue.record("Not expected to fail")
         }
         
-        if case .loaded(let properties) = viewModel.viewState {
-            #expect(properties.hasConnection == true)
+        if case .loaded = viewModel.viewState {
+            #expect(viewModel.hasConnection == true)
         } else {
             Issue.record("Wrong view state")
         }

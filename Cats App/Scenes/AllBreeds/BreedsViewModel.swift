@@ -15,15 +15,15 @@ enum BreedsViewState: Equatable {
     struct Properties: Equatable {
         init(hasMore: Bool,
              loadingMore: Bool = false,
-             scrollViewId: UUID
+             isReload: Bool = false
         ) {
             self.hasMore = hasMore
             self.loadingMore = loadingMore
-            self.scrollViewId = scrollViewId
+            self.isReload = isReload
         }
         let hasMore: Bool
         let loadingMore: Bool
-        let scrollViewId: UUID
+        let isReload: Bool
     }
 }
 
@@ -51,7 +51,6 @@ class DefaultBreedsViewModel: BreedsViewModel {
     private(set) var viewState: BreedsViewState = .loadingFirstPage
     private(set) var breeds: [CatBreed] = []
     private var hasMore = true
-    private var scrollViewId = UUID()
     
     var query: String = ""
     var hasConnection = true
@@ -77,7 +76,7 @@ class DefaultBreedsViewModel: BreedsViewModel {
                 try await loadFirstPage(mode: .offline)
             }
         } catch {
-            viewState = .loaded(properties: .init(hasMore: hasMore, loadingMore: false, scrollViewId: scrollViewId))
+            viewState = .loaded(properties: .init(hasMore: hasMore, loadingMore: false))
             throw error
         }
     }
@@ -85,13 +84,13 @@ class DefaultBreedsViewModel: BreedsViewModel {
     func loadNextPageIfNeeded() async {
         guard case .loaded(let properties) = viewState, properties.hasMore else { return }
         do {
-            viewState = .loaded(properties: .init(hasMore: hasMore, loadingMore: true, scrollViewId: scrollViewId))
+            viewState = .loaded(properties: .init(hasMore: hasMore, loadingMore: true))
             let page = try await breedsDataSource.loadNextPage()
             updateData(from: page)
         } catch {
             if error is NetworkError {
                 hasConnection = false
-                viewState = .loaded(properties: .init(hasMore: hasMore, scrollViewId: scrollViewId))
+                viewState = .loaded(properties: .init(hasMore: hasMore))
             }
         }
     }
@@ -114,7 +113,7 @@ class DefaultBreedsViewModel: BreedsViewModel {
             if wasOffline {
                 presentingOfflineAlert = true
             }
-            viewState = .loaded(properties: .init(hasMore: true, scrollViewId: scrollViewId))
+            viewState = .loaded(properties: .init(hasMore: true))
             throw error
         }
     }
@@ -137,10 +136,12 @@ class DefaultBreedsViewModel: BreedsViewModel {
     
     private func updateData(from page: Page<CatBreed>?) {
         if let page = page {
+            let isReload: Bool
             if page.page == 1 {
-                scrollViewId = UUID()
+                isReload = true
                 breeds = page.items
             } else {
+                isReload = false
                 breeds.append(contentsOf: page.items)
             }
             if page.dataSourceMode == .online {
@@ -148,10 +149,10 @@ class DefaultBreedsViewModel: BreedsViewModel {
             }
             hasMore = page.hasMore
             dataSourceMode = page.dataSourceMode
-            viewState = .loaded(properties: .init(hasMore: page.hasMore, scrollViewId: scrollViewId))
+            viewState = .loaded(properties: .init(hasMore: page.hasMore, isReload: isReload))
         } else {
             hasMore = false
-            viewState = .loaded(properties: .init(hasMore: hasMore, scrollViewId: scrollViewId))
+            viewState = .loaded(properties: .init(hasMore: hasMore))
         }
     }
 }

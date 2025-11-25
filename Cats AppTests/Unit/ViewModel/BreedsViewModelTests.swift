@@ -8,6 +8,7 @@
 import Testing
 import Observation
 import SwiftData
+import SwiftUI
 @testable import Cats_App
 
 @MainActor
@@ -22,7 +23,7 @@ struct BreedsViewModelTests {
         let context = ModelContext(container)
         sut = DefaultBreedsViewModel(
             breedsDataSource: mockDataSource,
-            toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)
+            toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context), navigationPath: .constant(.init())
         )
     }
     
@@ -65,12 +66,14 @@ struct BreedsViewModelTests {
         await sut.loadNextPageIfNeeded()
         try await Task.sleep(for: .seconds(1))
         
+        
+        
         let observedStates = await recorder.snapshot()
         let expectedStates: [BreedsViewState] = [
             .loadingFirstPage,
-            .loaded(properties: .init(isReload: true, hasMore: true, hasConnection: true, dataSourceMode: .online)),
-            .loadingMore,
-            .loaded(properties: .init(isReload: false, hasMore: false, hasConnection: true, dataSourceMode: .online))
+            .loaded(properties: .init(hasMore: true, loadingMore: false, isReload: true)),
+            .loaded(properties: .init(hasMore: true, loadingMore: true, isReload: false)),
+            .loaded(properties: .init(hasMore: false))
         ]
         #expect(observedStates == expectedStates)
     }
@@ -86,7 +89,9 @@ struct BreedsViewModelTests {
 
         try await sut.loadFirstPage()
 
-        #expect(sut.viewState == .loaded(properties: .init(isReload: true, hasMore: true, hasConnection: true, dataSourceMode: .online)))
+        #expect(sut.viewState == .loaded(properties: .init(hasMore: true, isReload: true)))
+        #expect(sut.hasConnection)
+        #expect(sut.dataSourceMode == .online)
         #expect(sut.breeds.count == mockDataSource.pageToReturn?.items.count)
         #expect(sut.breeds.first == mockDataSource.pageToReturn?.items.first)
     }
@@ -99,7 +104,9 @@ struct BreedsViewModelTests {
             try await sut.loadFirstPage()
             Issue.record("Expected error not thrown")
         } catch {
-            #expect(sut.viewState == .loaded(properties: .init(hasMore: true, hasConnection: false, dataSourceMode: .online)))
+            #expect(sut.viewState == .loaded(properties: .init(hasMore: true)))
+            #expect(!sut.hasConnection)
+            #expect(sut.dataSourceMode == .online)
         }
     }
 
@@ -125,7 +132,9 @@ struct BreedsViewModelTests {
         await sut.loadNextPageIfNeeded()
 
         #expect(sut.breeds == expected)
-        #expect(sut.viewState == .loaded(properties: .init(isReload: false, hasMore: false, hasConnection: true, dataSourceMode: .online)))
+        #expect(sut.viewState == .loaded(properties: .init(hasMore: false, isReload: false)))
+        #expect(sut.hasConnection)
+        #expect(sut.dataSourceMode == .online)
     }
     
     @Test
@@ -141,7 +150,9 @@ struct BreedsViewModelTests {
         await sut.loadNextPageIfNeeded()
 
         #expect(mockDataSource.loadNextPageCallCount == 0)
-        #expect(sut.viewState == .loaded(properties: .init(isReload: true, hasMore: false, hasConnection: true, dataSourceMode: .online)))
+        #expect(sut.viewState == .loaded(properties: .init(hasMore: false, isReload: true)))
+        #expect(sut.hasConnection)
+        #expect(sut.dataSourceMode == .online)
     }
 
     @Test
@@ -152,7 +163,8 @@ struct BreedsViewModelTests {
             try await sut.loadFirstPage()
             Issue.record("Expected network error not thrown")
         } catch {
-            #expect(sut.viewState == .loaded(properties: .init(hasMore: true, hasConnection: false, dataSourceMode: .online)))
+            #expect(sut.viewState == .loaded(properties: .init(hasMore: true)))
+            #expect(!sut.hasConnection)
         }
     }
 

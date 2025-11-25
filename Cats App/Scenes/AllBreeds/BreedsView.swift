@@ -12,8 +12,8 @@ struct BreedsView: View {
     static let defaultTitle = "Cat breeds"
     
     @State private var viewModel: BreedsViewModel
+    @State private var scrollViewId = UUID()
     @Environment(\.appDependencies) private var appDependencies
-    
     private let bannersHapticGenerator = UIImpactFeedbackGenerator(style: .light)
     
     init(viewModel: BreedsViewModel) {
@@ -25,12 +25,11 @@ struct BreedsView: View {
             switch viewModel.viewState {
             case .loadingFirstPage:
                 emptyLoadingView()
-            case .loaded(let properties):
+            case .loaded:
                 if viewModel.breeds.isEmpty {
                     contentUnavailableView()
                 } else {
                     breedsScrollableGrid()
-                        .id(properties.scrollViewId)
                 }
             }
         }
@@ -43,6 +42,11 @@ struct BreedsView: View {
         .onChange(of: viewModel.query) { oldValue, newValue in
             if textWasCleared(newValue: newValue, oldValue: oldValue) {
                 Task { try? await viewModel.loadFirstPage() }
+            }
+        }
+        .onChange(of: viewModel.viewState) { _, newValue in
+            if case .loaded(let properties) = newValue, properties.isReload {
+                scrollViewId = UUID()
             }
         }
         .refreshable {
@@ -100,6 +104,7 @@ struct BreedsView: View {
             }
             .padding(.horizontal)
         }
+        .id(scrollViewId)
     }
     
     private func contentUnavailableView() -> some View {
