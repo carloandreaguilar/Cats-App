@@ -13,8 +13,8 @@ protocol AppDependencies {
     var toggleFavouriteUseCase: ToggleFavouriteUseCase { get }
     var modelContainer: ModelContainer { get }
     var urlCache: URLCache { get }
-    func makeBreedsViewModel(with path: Binding<NavigationPath>) -> BreedsViewModel
-    func makeFavouritesViewModel(with path: Binding<NavigationPath>) -> FavouritesViewModel
+    func makeBreedsViewModel() -> BreedsViewModel
+    func makeFavouritesViewModel() -> FavouritesViewModel
     func makeDetailViewModel(breed:CatBreed) -> BreedDetailViewModel
 }
 
@@ -58,15 +58,13 @@ struct DefaultAppDependencies: AppDependencies {
         self.urlCache = urlCache
     }
     
-    func makeBreedsViewModel(with path: Binding<NavigationPath>) -> BreedsViewModel {
+    func makeBreedsViewModel() -> BreedsViewModel {
         return DefaultBreedsViewModel(
-            breedsDataSource: breedsDataSource,
-            toggleFavouriteUseCase: toggleFavouriteUseCase,
-            navigationPath: path)
+            breedsDataSource: breedsDataSource, toggleFavouriteUseCase: toggleFavouriteUseCase)
     }
     
-    func makeFavouritesViewModel(with path: Binding<NavigationPath>) -> FavouritesViewModel {
-        return DefaultFavouritesViewModel(toggleFavouriteUseCase: toggleFavouriteUseCase, navigationPath: path)
+    func makeFavouritesViewModel() -> FavouritesViewModel {
+        return DefaultFavouritesViewModel(toggleFavouriteUseCase: toggleFavouriteUseCase)
     }
     
     func makeDetailViewModel(breed:CatBreed) -> BreedDetailViewModel {
@@ -84,4 +82,3 @@ extension EnvironmentValues {
         set { self[AppDependenciesKey.self] = newValue }
     }
 }
-

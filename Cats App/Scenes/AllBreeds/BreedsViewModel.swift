@@ -6,7 +6,6 @@
 //
 
 import Observation
-import SwiftUI
 
 enum BreedsViewState: Equatable {
     case loadingFirstPage,
@@ -31,7 +30,6 @@ protocol BreedsViewModel {
     var query: String { get set }
     var viewState: BreedsViewState { get }
     var breeds: [CatBreed] { get }
-    var navigationPath: Binding<NavigationPath> { get set }
     var hasConnection: Bool { get }
     var presentingOfflineAlert: Bool { get set }
     var showingReconnectedToast: Bool { get set }
@@ -58,12 +56,10 @@ class DefaultBreedsViewModel: BreedsViewModel {
     var showingReconnectedToast = false
     var animatingOfflineBanner = false
     var dataSourceMode: DataSourceMode = .online
-    var navigationPath: Binding<NavigationPath>
     
-    init(breedsDataSource: BreedsDataSource, toggleFavouriteUseCase: ToggleFavouriteUseCase, navigationPath: Binding<NavigationPath>) {
+    init(breedsDataSource: BreedsDataSource, toggleFavouriteUseCase: ToggleFavouriteUseCase) {
         self.breedsDataSource = breedsDataSource
         self.toggleFavouriteUseCase = toggleFavouriteUseCase
-        self.navigationPath = navigationPath
     }
     
     func loadFirstPage() async throws {

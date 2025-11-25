@@ -12,7 +12,7 @@ struct FavouriteBreedsView: View {
     static let defaultTitle = "Favourites"
     
     @Environment(\.appDependencies) private var appDependencies
-    
+    @Binding private var navigationPath: NavigationPath
     @State private var viewModel: FavouritesViewModel
     
     @Query(
@@ -21,8 +21,9 @@ struct FavouriteBreedsView: View {
     )
     private var favourites: [CatBreed]
     
-    init(viewModel: FavouritesViewModel) {
+    init(viewModel: FavouritesViewModel, navigationPath: Binding<NavigationPath>) {
         self.viewModel = viewModel
+        self._navigationPath = navigationPath
     }
     
     var body: some View {
@@ -47,7 +48,7 @@ struct FavouriteBreedsView: View {
                 averageLifeSpanView()
                 BreedsGridView(favourites,
                                onTap: { breed in
-                    viewModel.navigationPath.wrappedValue.append(BreedDestination.detail(breed: breed))
+                    navigationPath.append(BreedDestination.detail(breed: breed))
                 }, onFavouriteTap: { breed in
                     try? viewModel.toggleFavourite(for: breed)
                 })
@@ -86,6 +87,6 @@ struct FavouriteBreedsView: View {
     let container = try! ModelContainer(for: CatBreed.self, configurations: .init(isStoredInMemoryOnly: true))
     let context = container.mainContext
     
-    FavouriteBreedsView(viewModel: DefaultFavouritesViewModel(toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context), navigationPath:
-            .constant(NavigationPath())))
+    FavouriteBreedsView(viewModel: DefaultFavouritesViewModel(toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)), navigationPath:
+            .constant(NavigationPath()))
 }

@@ -48,15 +48,13 @@ struct UITestingAppDependencies: AppDependencies {
         self.urlCache = urlCache
     }
     
-    func makeBreedsViewModel(with path: Binding<NavigationPath>) -> BreedsViewModel {
+    func makeBreedsViewModel() -> BreedsViewModel {
         return DefaultBreedsViewModel(
-            breedsDataSource: breedsDataSource,
-            toggleFavouriteUseCase: toggleFavouriteUseCase,
-            navigationPath: path)
+            breedsDataSource: breedsDataSource, toggleFavouriteUseCase: toggleFavouriteUseCase)
     }
     
-    func makeFavouritesViewModel(with path: Binding<NavigationPath>) -> FavouritesViewModel {
-        return DefaultFavouritesViewModel(toggleFavouriteUseCase: toggleFavouriteUseCase, navigationPath: path)
+    func makeFavouritesViewModel() -> FavouritesViewModel {
+        return DefaultFavouritesViewModel(toggleFavouriteUseCase: toggleFavouriteUseCase)
     }
     
     func makeDetailViewModel(breed:CatBreed) -> BreedDetailViewModel {
@@ -80,4 +78,3 @@ struct UITestHostApp: App {
         .environment(\.appDependencies, dependencies)
     }
 }
-

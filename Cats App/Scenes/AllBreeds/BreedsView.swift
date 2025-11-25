@@ -10,14 +10,16 @@ import SwiftData
 
 struct BreedsView: View {
     static let defaultTitle = "Cat breeds"
-    
-    @State private var viewModel: BreedsViewModel
-    @State private var scrollViewId = UUID()
     @Environment(\.appDependencies) private var appDependencies
+    @State private var viewModel: BreedsViewModel
+    @Binding private var navigationPath: NavigationPath
+    @State private var scrollViewId = UUID()
+   
     private let bannersHapticGenerator = UIImpactFeedbackGenerator(style: .light)
     
-    init(viewModel: BreedsViewModel) {
+    init(viewModel: BreedsViewModel, navigationPath: Binding<NavigationPath>) {
         self.viewModel = viewModel
+        self._navigationPath = navigationPath
     }
     
     var body: some View {
@@ -93,7 +95,7 @@ struct BreedsView: View {
         ScrollView {
             VStack(spacing: 0) {
                 BreedsGridView(viewModel.breeds, onTap: { breed in
-                    viewModel.navigationPath.wrappedValue.append(BreedDestination.detail(breed: breed))
+                    navigationPath.append(BreedDestination.detail(breed: breed))
                 }, onFavouriteTap: { breed in
                     try? viewModel.toggleFavourite(for: breed)
                 }, onlastItemAppear: {
@@ -258,8 +260,9 @@ struct BreedsView: View {
             breedsDataSource: DefaultBreedsDataSource(
                 networkService: DefaultBreedsNetworkService(),
                 persistenceService: DefaultBreedsPersistenceService(modelContext: context)
-            ), toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context), navigationPath: .constant(NavigationPath())
-        )
+            ), toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context),
+        ),
+        navigationPath: .constant(NavigationPath())
     )
     .modelContainer(container)
 }

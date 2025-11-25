@@ -23,7 +23,7 @@ struct BreedsViewModelTests {
         let context = ModelContext(container)
         sut = DefaultBreedsViewModel(
             breedsDataSource: mockDataSource,
-            toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context), navigationPath: .constant(.init())
+            toggleFavouriteUseCase: DefaultToggleFavouriteUseCase(modelContext: context)
         )
     }
     

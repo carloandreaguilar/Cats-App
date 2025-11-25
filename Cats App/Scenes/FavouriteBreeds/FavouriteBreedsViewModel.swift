@@ -10,20 +10,17 @@ import Observation
 import SwiftUI
 
 protocol FavouritesViewModel {
-    var navigationPath: Binding<NavigationPath> { get set }
     func formattedAverageLifespan(for breeds: [CatBreed]) -> String?
     func toggleFavourite(for breed: CatBreed) throws
 }
 
 @Observable
 class DefaultFavouritesViewModel: FavouritesViewModel {
-    var navigationPath: Binding<NavigationPath>
     private let toggleFavouriteUseCase: ToggleFavouriteUseCase
     private let formatter = NumberFormatter()
     
-    init(toggleFavouriteUseCase: ToggleFavouriteUseCase, navigationPath: Binding<NavigationPath>) {
+    init(toggleFavouriteUseCase: ToggleFavouriteUseCase) {
         self.toggleFavouriteUseCase = toggleFavouriteUseCase
-        self.navigationPath = navigationPath
     }
     
     func formattedAverageLifespan(for breeds: [CatBreed]) -> String? {
